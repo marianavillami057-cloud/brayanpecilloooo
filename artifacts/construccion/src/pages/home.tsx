@@ -436,7 +436,7 @@ export default function Home() {
               className="inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-green-600 font-bold pl-2 pr-5 py-2 sm:py-3 rounded-full shadow-lg transition-all text-sm sm:text-base w-full sm:w-auto"
             >
               <img src="/whatsapp-icon.png" alt="WhatsApp" className="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 rounded-full" />
-              <span className="truncate">{whatsapp}</span>
+              <span className="truncate">ESCRIBIR AL WHATSAPP</span>
             </a>
             <a
               href={`tel:${phoneClean}`}
