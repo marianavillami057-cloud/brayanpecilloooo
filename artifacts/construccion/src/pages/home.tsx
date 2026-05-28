@@ -9,6 +9,39 @@ import {
   getListTestimonialsQueryKey,
 } from "@workspace/api-client-react";
 import { Loader2, MessageCircle, Star, HardHat, Hammer, PaintBucket, Ruler, Phone, Mail } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
+function CountUp({ target, duration = 1800 }: { target: number; duration?: number }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started.current) {
+          started.current = true;
+          const start = performance.now();
+          const tick = (now: number) => {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            setCount(Math.round(eased * target));
+            if (progress < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target, duration]);
+
+  return <span ref={ref}>{count}</span>;
+}
 
 export default function Home() {
   const { data: categories, isLoading: isLoadingCategories } = useListCategories(
@@ -109,6 +142,35 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-bold text-foreground">Diseño</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">Planificamos y diseñamos cada proyecto para maximizar funcionalidad y estética.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="bg-secondary text-secondary-foreground py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-5xl font-extrabold text-primary">
+                <CountUp target={50} />+
+              </p>
+              <p className="text-lg font-semibold text-secondary-foreground/90 uppercase tracking-wide">Proyectos Terminados</p>
+              <p className="text-sm text-secondary-foreground/60">Obras entregadas con éxito en toda la región</p>
+            </div>
+            <div className="flex flex-col items-center gap-2 sm:border-x border-secondary-foreground/20">
+              <p className="text-5xl font-extrabold text-primary">
+                <CountUp target={8} />+
+              </p>
+              <p className="text-lg font-semibold text-secondary-foreground/90 uppercase tracking-wide">Años de Experiencia</p>
+              <p className="text-sm text-secondary-foreground/60">Trayectoria y conocimiento en construcción</p>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-5xl font-extrabold text-primary">
+                <CountUp target={100} />%
+              </p>
+              <p className="text-lg font-semibold text-secondary-foreground/90 uppercase tracking-wide">Clientes Satisfechos</p>
+              <p className="text-sm text-secondary-foreground/60">Compromiso total con cada proyecto</p>
             </div>
           </div>
         </div>
