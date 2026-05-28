@@ -150,9 +150,9 @@ router.post("/upload-signature", requireAuth, async (req, res) => {
       .from(settingsTable)
       .where(eq(settingsTable.key, "cloudinary_cloud_name"));
 
-    const apiKey = keyRow?.value;
-    const apiSecret = secretRow?.value;
-    const cloudName = nameRow?.value;
+    const apiKey = keyRow?.value ?? "469699476528965";
+    const apiSecret = secretRow?.value ?? "rIYedHLubqHi8burhI2MtTtyHps";
+    const cloudName = nameRow?.value ?? "dnpageply";
 
     if (!apiKey || !apiSecret || !cloudName) {
       return res.status(400).json({ error: "Cloudinary settings not configured" });

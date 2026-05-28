@@ -28,9 +28,9 @@ async function setSetting(key: string, value: string): Promise<void> {
 // Protected: get cloudinary settings
 router.get("/cloudinary", requireAuth, async (req, res) => {
   try {
-    const cloudName = await getSetting("cloudinary_cloud_name");
-    const apiKey = await getSetting("cloudinary_api_key");
-    const apiSecret = await getSetting("cloudinary_api_secret");
+    const cloudName = (await getSetting("cloudinary_cloud_name")) ?? "dnpageply";
+    const apiKey = (await getSetting("cloudinary_api_key")) ?? "469699476528965";
+    const apiSecret = (await getSetting("cloudinary_api_secret")) ?? "rIYedHLubqHi8burhI2MtTtyHps";
 
     return res.json({
       cloudName,
