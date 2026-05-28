@@ -245,11 +245,14 @@ export default function Home() {
 
                 return (
                   <section key={category.id} className="space-y-8">
-                    <div className="flex items-center gap-4">
-                      <h2 className="text-3xl font-bold text-secondary uppercase tracking-wide">
-                        {category.name}
-                      </h2>
-                      <div className="flex-1 h-px bg-border"></div>
+                    <div className="flex items-center gap-5">
+                      <div className="flex items-center gap-4 shrink-0">
+                        <div className="w-1.5 h-10 rounded-full bg-primary"></div>
+                        <h2 className="text-3xl sm:text-4xl font-extrabold text-secondary uppercase tracking-widest drop-shadow-sm">
+                          {category.name}
+                        </h2>
+                      </div>
+                      <div className="flex-1 h-px bg-gradient-to-r from-primary/40 to-transparent"></div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">

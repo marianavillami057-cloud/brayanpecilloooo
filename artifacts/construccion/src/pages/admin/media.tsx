@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminLayout } from "@/components/layout/admin-layout";
 import {
   useListCategories,
@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Loader2, Video, UploadCloud, GripVertical, Tag } from "lucide-react";
+import { Plus, Trash2, Loader2, Video, UploadCloud, GripVertical, Tag, Pencil, Check, X as XIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { uploadToCloudinary } from "@/lib/cloudinary";
@@ -50,13 +50,19 @@ function SortableMediaCard({
   categories,
   onDelete,
   onCategoryChange,
+  onTitleChange,
 }: {
   item: MediaItem;
   categories: { id: number; name: string }[];
   onDelete: (id: number) => void;
   onCategoryChange: (id: number, categoryId: number) => void;
+  onTitleChange: (id: number, title: string) => void;
 }) {
   const [showCatPicker, setShowCatPicker] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleValue, setTitleValue] = useState(item.title);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
   });
@@ -66,6 +72,26 @@ function SortableMediaCard({
     transition,
     opacity: isDragging ? 0.4 : 1,
     zIndex: isDragging ? 50 : undefined,
+  };
+
+  const startEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTitleValue(item.title);
+    setEditingTitle(true);
+    setTimeout(() => titleInputRef.current?.focus(), 0);
+  };
+
+  const saveTitle = () => {
+    const trimmed = titleValue.trim();
+    if (trimmed && trimmed !== item.title) {
+      onTitleChange(item.id, trimmed);
+    }
+    setEditingTitle(false);
+  };
+
+  const cancelEdit = () => {
+    setTitleValue(item.title);
+    setEditingTitle(false);
   };
 
   return (
@@ -89,7 +115,7 @@ function SortableMediaCard({
           <img src={item.url} alt={item.title} className="w-full h-full object-cover" />
         )}
 
-        {/* Hover overlay: delete + category */}
+        {/* Hover overlay: delete + category + edit */}
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
           <Button
             variant="destructive"
@@ -109,6 +135,15 @@ function SortableMediaCard({
             onClick={() => setShowCatPicker((v) => !v)}
           >
             <Tag className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="secondary"
+            size="icon"
+            className="h-8 w-8"
+            title="Editar nombre"
+            onClick={startEdit}
+          >
+            <Pencil className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -137,9 +172,43 @@ function SortableMediaCard({
         </div>
       )}
 
-      <div className="p-2 text-xs font-medium truncate" title={item.title}>
-        {item.title}
-      </div>
+      {/* Title area */}
+      {editingTitle ? (
+        <div className="p-2 flex items-center gap-1">
+          <input
+            ref={titleInputRef}
+            className="flex-1 text-xs border border-border rounded px-1.5 py-1 bg-background focus:outline-none focus:ring-1 focus:ring-primary min-w-0"
+            value={titleValue}
+            onChange={(e) => setTitleValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") saveTitle();
+              if (e.key === "Escape") cancelEdit();
+            }}
+            onBlur={saveTitle}
+          />
+          <button
+            className="shrink-0 text-green-600 hover:text-green-700"
+            onMouseDown={(e) => { e.preventDefault(); saveTitle(); }}
+          >
+            <Check className="w-3.5 h-3.5" />
+          </button>
+          <button
+            className="shrink-0 text-destructive hover:text-destructive/80"
+            onMouseDown={(e) => { e.preventDefault(); cancelEdit(); }}
+          >
+            <XIcon className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      ) : (
+        <div
+          className="p-2 text-xs font-medium truncate flex items-center gap-1 cursor-pointer hover:bg-muted/50 transition-colors"
+          title={`${item.title} — clic para editar`}
+          onClick={startEdit}
+        >
+          <span className="truncate">{item.title}</span>
+          <Pencil className="w-2.5 h-2.5 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+      )}
     </div>
   );
 }
@@ -275,6 +344,22 @@ export default function AdminMedia() {
 
       return [...otherItems, ...reordered.map((item, idx) => ({ ...item, order: idx }))];
     });
+  };
+
+  const handleTitleChange = (mediaId: number, newTitle: string) => {
+    updateMediaMutation.mutate(
+      { id: mediaId, data: { title: newTitle } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListMediaQueryKey({}) });
+          toast({ title: "Nombre actualizado" });
+        },
+        onError: () => toast({ title: "Error al guardar nombre", variant: "destructive" }),
+      }
+    );
+    setLocalMedia((prev) =>
+      prev.map((m) => (m.id === mediaId ? { ...m, title: newTitle } : m))
+    );
   };
 
   const handleCategoryChange = (mediaId: number, newCategoryId: number) => {
@@ -416,6 +501,7 @@ export default function AdminMedia() {
                       categories={sortedCategories}
                       onDelete={(id) => deleteMediaMutation.mutate({ id })}
                       onCategoryChange={handleCategoryChange}
+                      onTitleChange={handleTitleChange}
                     />
                   ))}
                 </div>
@@ -455,6 +541,7 @@ export default function AdminMedia() {
                             categories={sortedCategories}
                             onDelete={(id) => deleteMediaMutation.mutate({ id })}
                             onCategoryChange={handleCategoryChange}
+                            onTitleChange={handleTitleChange}
                           />
                         ))}
                       </div>
