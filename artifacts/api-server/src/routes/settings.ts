@@ -67,6 +67,48 @@ router.put("/cloudinary", requireAuth, async (req, res) => {
   }
 });
 
+// Public: get hero settings
+router.get("/hero", async (req, res) => {
+  try {
+    const profileImage = await getSetting("hero_profile_image");
+    const coverImage = await getSetting("hero_cover_image");
+    return res.json({ profileImage, coverImage });
+  } catch (err) {
+    req.log.error(err, "Failed to get hero settings");
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Protected: update hero settings
+router.put("/hero", requireAuth, async (req, res) => {
+  try {
+    const { profileImage, coverImage } = req.body as {
+      profileImage?: string | null;
+      coverImage?: string | null;
+    };
+    if (profileImage !== undefined) {
+      if (profileImage === null) {
+        await db.delete(settingsTable).where(eq(settingsTable.key, "hero_profile_image"));
+      } else {
+        await setSetting("hero_profile_image", profileImage);
+      }
+    }
+    if (coverImage !== undefined) {
+      if (coverImage === null) {
+        await db.delete(settingsTable).where(eq(settingsTable.key, "hero_cover_image"));
+      } else {
+        await setSetting("hero_cover_image", coverImage);
+      }
+    }
+    const finalProfile = await getSetting("hero_profile_image");
+    const finalCover = await getSetting("hero_cover_image");
+    return res.json({ profileImage: finalProfile, coverImage: finalCover });
+  } catch (err) {
+    req.log.error(err, "Failed to update hero settings");
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Public: get contact settings
 router.get("/contact", async (req, res) => {
   try {

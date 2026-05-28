@@ -408,6 +408,36 @@ paths:
               schema:
                 $ref: "#/components/schemas/StatsSettings"
 
+  /settings/hero:
+    get:
+      operationId: getHeroSettings
+      tags: [settings]
+      summary: Get hero image settings
+      responses:
+        "200":
+          description: Hero settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HeroSettings"
+    put:
+      operationId: updateHeroSettings
+      tags: [settings]
+      summary: Update hero image settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HeroSettingsInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HeroSettings"
+
   /settings/cloudinary:
     get:
       operationId: getCloudinarySettings
@@ -666,6 +696,23 @@ components:
           type: integer
         satisfaction:
           type: integer
+
+    HeroSettings:
+      type: object
+      required: [profileImage, coverImage]
+      properties:
+        profileImage:
+          type: ["string", "null"]
+        coverImage:
+          type: ["string", "null"]
+
+    HeroSettingsInput:
+      type: object
+      properties:
+        profileImage:
+          type: ["string", "null"]
+        coverImage:
+          type: ["string", "null"]
 
     ContactSettings:
       type: object

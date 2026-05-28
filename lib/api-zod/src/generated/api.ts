@@ -322,6 +322,29 @@ export const UpdateStatsSettingsResponse = zod.object({
 
 
 /**
+ * @summary Get hero image settings
+ */
+export const GetHeroSettingsResponse = zod.object({
+  "profileImage": zod.string().nullable(),
+  "coverImage": zod.string().nullable()
+})
+
+
+/**
+ * @summary Update hero image settings
+ */
+export const UpdateHeroSettingsBody = zod.object({
+  "profileImage": zod.string().nullish(),
+  "coverImage": zod.string().nullish()
+})
+
+export const UpdateHeroSettingsResponse = zod.object({
+  "profileImage": zod.string().nullable(),
+  "coverImage": zod.string().nullable()
+})
+
+
+/**
  * @summary Get Cloudinary settings
  */
 export const GetCloudinarySettingsResponse = zod.object({

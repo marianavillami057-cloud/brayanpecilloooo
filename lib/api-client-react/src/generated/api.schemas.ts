@@ -141,6 +141,20 @@ export interface StatsSettingsInput {
   satisfaction: number;
 }
 
+export interface HeroSettings {
+  /** @nullable */
+  profileImage: string | null;
+  /** @nullable */
+  coverImage: string | null;
+}
+
+export interface HeroSettingsInput {
+  /** @nullable */
+  profileImage?: string | null;
+  /** @nullable */
+  coverImage?: string | null;
+}
+
 export interface ContactSettings {
   whatsapp: string;
   phone: string;

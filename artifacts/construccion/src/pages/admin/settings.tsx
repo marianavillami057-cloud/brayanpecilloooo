@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminLayout } from "@/components/layout/admin-layout";
 import {
   useGetCloudinarySettings,
@@ -7,17 +7,22 @@ import {
   useUpdateContactSettings,
   useGetStatsSettings,
   useUpdateStatsSettings,
+  useGetHeroSettings,
+  useUpdateHeroSettings,
+  useGetUploadSignature,
   getGetCloudinarySettingsQueryKey,
   getGetContactSettingsQueryKey,
   getGetStatsSettingsQueryKey,
+  getGetHeroSettingsQueryKey,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CheckCircle2, AlertCircle, Phone, Mail, MessageCircle, BarChart2 } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Phone, Mail, MessageCircle, BarChart2, ImageIcon, Trash2, UploadCloud, UserCircle2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export default function AdminSettings() {
   const { toast } = useToast();
@@ -35,6 +40,10 @@ export default function AdminSettings() {
     query: { queryKey: getGetStatsSettingsQueryKey() },
   });
 
+  const { data: heroSettings, isLoading: isLoadingHero } = useGetHeroSettings({
+    query: { queryKey: getGetHeroSettingsQueryKey() },
+  });
+
   const [cloudName, setCloudName] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [apiSecret, setApiSecret] = useState("");
@@ -46,6 +55,11 @@ export default function AdminSettings() {
   const [statProjects, setStatProjects] = useState(50);
   const [statYears, setStatYears] = useState(8);
   const [statSatisfaction, setStatSatisfaction] = useState(100);
+
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [isUploadingProfile, setIsUploadingProfile] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const profileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (cloudinarySettings) {
@@ -107,6 +121,20 @@ export default function AdminSettings() {
     },
   });
 
+  const updateHero = useUpdateHeroSettings({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getGetHeroSettingsQueryKey() });
+        toast({ title: "Imagen actualizada" });
+      },
+      onError: () => {
+        toast({ title: "Error al actualizar", variant: "destructive" });
+      },
+    },
+  });
+
+  const getSignature = useGetUploadSignature();
+
   const handleCloudinarySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!cloudName) {
@@ -130,13 +158,176 @@ export default function AdminSettings() {
     updateStats.mutate({ data: { projects: statProjects, years: statYears, satisfaction: statSatisfaction } });
   };
 
+  const handleUploadHeroImage = async (file: File, field: "coverImage" | "profileImage") => {
+    if (!cloudinarySettings?.hasApiKey || !cloudinarySettings?.cloudName) {
+      toast({ title: "Configura Cloudinary primero en la sección de abajo", variant: "destructive" });
+      return;
+    }
+    const setter = field === "coverImage" ? setIsUploadingCover : setIsUploadingProfile;
+    try {
+      setter(true);
+      const sigData = await getSignature.mutateAsync({});
+      const result = await uploadToCloudinary(file, sigData.signature, sigData.timestamp, sigData.apiKey, sigData.cloudName);
+      updateHero.mutate({ data: { [field]: result.secure_url } });
+    } catch (err: any) {
+      toast({ title: "Error al subir", description: err.message, variant: "destructive" });
+    } finally {
+      setter(false);
+    }
+  };
+
+  const handleDeleteHeroImage = (field: "coverImage" | "profileImage") => {
+    updateHero.mutate({ data: { [field]: null } });
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-8 max-w-2xl">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-secondary">Ajustes del Sistema</h1>
-          <p className="text-muted-foreground mt-1">Configura los datos de contacto y el almacenamiento de archivos.</p>
+          <p className="text-muted-foreground mt-1">Configura las imágenes, contacto y estadísticas.</p>
         </div>
+
+        {/* Hero Images */}
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ImageIcon className="w-5 h-5 text-primary" />
+              Imágenes del Perfil
+            </CardTitle>
+            <CardDescription>
+              La portada es la imagen de fondo del hero. La foto de perfil es tu logo circular. Si eliminas alguna vuelve a la imagen original.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoadingHero ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Cover Image */}
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2 text-base font-semibold">
+                    <ImageIcon className="w-4 h-4 text-primary" />
+                    Foto de Portada
+                  </Label>
+                  {heroSettings?.coverImage ? (
+                    <div className="relative rounded-lg overflow-hidden border border-border">
+                      <img
+                        src={heroSettings.coverImage}
+                        alt="Portada actual"
+                        className="w-full h-32 object-cover"
+                      />
+                      <div className="absolute top-2 right-2 flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => coverInputRef.current?.click()}
+                          disabled={isUploadingCover}
+                        >
+                          {isUploadingCover ? <Loader2 className="w-3 h-3 animate-spin" /> : <UploadCloud className="w-3 h-3" />}
+                          <span className="ml-1">Cambiar</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteHeroImage("coverImage")}
+                          disabled={updateHero.isPending}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                      onClick={() => coverInputRef.current?.click()}
+                    >
+                      {isUploadingCover ? (
+                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                          <p className="text-sm">Subiendo portada...</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                          <UploadCloud className="w-8 h-8" />
+                          <p className="text-sm font-medium">Haz clic para subir la portada</p>
+                          <p className="text-xs">JPG, PNG, WebP. Recomendado: 1200×400px</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleUploadHeroImage(f, "coverImage");
+                      e.target.value = "";
+                    }}
+                  />
+                </div>
+
+                {/* Profile Image */}
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2 text-base font-semibold">
+                    <UserCircle2 className="w-4 h-4 text-primary" />
+                    Foto de Perfil
+                  </Label>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-shrink-0">
+                      <img
+                        src={heroSettings?.profileImage || "/logo.jpeg"}
+                        alt="Perfil actual"
+                        className="w-20 h-20 rounded-full object-cover border-2 border-border shadow"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => profileInputRef.current?.click()}
+                        disabled={isUploadingProfile}
+                      >
+                        {isUploadingProfile ? (
+                          <><Loader2 className="mr-2 w-4 h-4 animate-spin" />Subiendo...</>
+                        ) : (
+                          <><UploadCloud className="mr-2 w-4 h-4" />Cambiar foto de perfil</>
+                        )}
+                      </Button>
+                      {heroSettings?.profileImage && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteHeroImage("profileImage")}
+                          disabled={updateHero.isPending}
+                        >
+                          <Trash2 className="mr-2 w-4 h-4" />
+                          Restaurar original
+                        </Button>
+                      )}
+                      <p className="text-xs text-muted-foreground">JPG, PNG. Recomendado: cuadrada 400×400px</p>
+                    </div>
+                  </div>
+                  <input
+                    ref={profileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleUploadHeroImage(f, "profileImage");
+                      e.target.value = "";
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Stats Settings */}
         <Card className="border-border">

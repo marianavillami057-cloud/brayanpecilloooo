@@ -29,6 +29,8 @@ import type {
   ContactSettings,
   ContactSettingsInput,
   HealthStatus,
+  HeroSettings,
+  HeroSettingsInput,
   ListCategoriesParams,
   ListMediaParams,
   ListTestimonialsParams,
@@ -1676,6 +1678,154 @@ export const useUpdateStatsSettings = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUpdateStatsSettingsMutationOptions(options));
+    }
+
+export const getGetHeroSettingsUrl = () => {
+
+
+
+
+  return `/api/settings/hero`
+}
+
+/**
+ * @summary Get hero image settings
+ */
+export const getHeroSettings = async ( options?: RequestInit): Promise<HeroSettings> => {
+
+  return customFetch<HeroSettings>(getGetHeroSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetHeroSettingsQueryKey = () => {
+    return [
+    `/api/settings/hero`
+    ] as const;
+    }
+
+
+export const getGetHeroSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getHeroSettings>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHeroSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetHeroSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHeroSettings>>> = ({ signal }) => getHeroSettings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHeroSettings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetHeroSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getHeroSettings>>>
+export type GetHeroSettingsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get hero image settings
+ */
+
+export function useGetHeroSettings<TData = Awaited<ReturnType<typeof getHeroSettings>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHeroSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetHeroSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateHeroSettingsUrl = () => {
+
+
+
+
+  return `/api/settings/hero`
+}
+
+/**
+ * @summary Update hero image settings
+ */
+export const updateHeroSettings = async (heroSettingsInput: HeroSettingsInput, options?: RequestInit): Promise<HeroSettings> => {
+
+  return customFetch<HeroSettings>(getUpdateHeroSettingsUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      heroSettingsInput,)
+  }
+);}
+
+
+
+
+export const getUpdateHeroSettingsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateHeroSettings>>, TError,{data: BodyType<HeroSettingsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateHeroSettings>>, TError,{data: BodyType<HeroSettingsInput>}, TContext> => {
+
+const mutationKey = ['updateHeroSettings'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateHeroSettings>>, {data: BodyType<HeroSettingsInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateHeroSettings(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateHeroSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateHeroSettings>>>
+    export type UpdateHeroSettingsMutationBody = BodyType<HeroSettingsInput>
+    export type UpdateHeroSettingsMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update hero image settings
+ */
+export const useUpdateHeroSettings = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateHeroSettings>>, TError,{data: BodyType<HeroSettingsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateHeroSettings>>,
+        TError,
+        {data: BodyType<HeroSettingsInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateHeroSettingsMutationOptions(options));
     }
 
 export const getGetCloudinarySettingsUrl = () => {

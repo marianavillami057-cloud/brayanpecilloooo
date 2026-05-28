@@ -4,11 +4,13 @@ import {
   useGetContactSettings,
   useListTestimonials,
   useGetStatsSettings,
+  useGetHeroSettings,
   getListCategoriesQueryKey,
   getListMediaQueryKey,
   getGetContactSettingsQueryKey,
   getListTestimonialsQueryKey,
   getGetStatsSettingsQueryKey,
+  getGetHeroSettingsQueryKey,
 } from "@workspace/api-client-react";
 import { Loader2, MessageCircle, Star, HardHat, Hammer, PaintBucket, Ruler, Phone, Mail } from "lucide-react";
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -156,6 +158,10 @@ export default function Home() {
     query: { queryKey: getGetStatsSettingsQueryKey() },
   });
 
+  const { data: heroData } = useGetHeroSettings({
+    query: { queryKey: getGetHeroSettingsQueryKey() },
+  });
+
   const [lightbox, setLightbox] = useState<{ items: LightboxItem[]; index: number } | null>(null);
 
   const isLoading = isLoadingCategories || isLoadingMedia;
@@ -169,34 +175,50 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
-      {/* Hero Section */}
-      <header className="bg-secondary text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/10 z-0"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 lg:py-32 relative z-10">
-          <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-8 sm:gap-12">
-            <div className="flex-1 space-y-4 sm:space-y-6 text-center sm:text-left">
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight">
+      {/* Hero Section — Facebook-style */}
+      <header className="bg-secondary text-white">
+        {/* Cover image */}
+        <div className="relative w-full h-36 sm:h-52 md:h-64 overflow-hidden bg-secondary">
+          {heroData?.coverImage ? (
+            <img
+              src={heroData.coverImage}
+              alt="Portada"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-secondary via-secondary to-secondary/80" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-secondary/60 to-transparent pointer-events-none" />
+        </div>
+
+        {/* Profile + info row */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-10 relative z-10">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6 -mt-14 sm:-mt-16 md:-mt-20">
+            {/* Profile photo */}
+            <div className="flex justify-center sm:justify-start flex-shrink-0">
+              <img
+                src={heroData?.profileImage || "/logo.jpeg"}
+                alt="Alejandro Pecillo"
+                className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 object-cover rounded-full border-4 border-white shadow-2xl bg-secondary"
+              />
+            </div>
+
+            {/* Name, tagline, CTA */}
+            <div className="flex-1 text-center sm:text-left space-y-2 sm:space-y-3 sm:pb-2">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight drop-shadow">
                 Alejandro Pecillo
               </h1>
-              <p className="text-base sm:text-xl md:text-2xl text-secondary-foreground/90 font-medium max-w-2xl border-l-4 border-primary pl-4">
+              <p className="text-sm sm:text-lg text-white/90 font-medium max-w-lg border-l-4 border-primary pl-3 mx-auto sm:mx-0">
                 Construyendo lo que necesitas, con la garantía que mereces.
               </p>
-
-              <div className="pt-2">
+              <div className="pt-1">
                 <a
                   href="#portfolio"
-                  className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-lg shadow-lg hover-elevate transition-all text-sm sm:text-base"
+                  className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 py-2.5 sm:py-3 rounded-lg shadow-lg transition-all text-sm sm:text-base"
                 >
                   Ver Proyectos
                 </a>
               </div>
-            </div>
-            <div className="flex-shrink-0">
-              <img
-                src="/logo.jpeg"
-                alt="Alejandro Pecillo Logo"
-                className="w-40 h-40 sm:w-64 sm:h-64 md:w-80 md:h-80 object-cover rounded-full shadow-2xl border-4 border-white/20"
-              />
             </div>
           </div>
         </div>

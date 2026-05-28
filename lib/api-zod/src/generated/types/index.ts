@@ -15,6 +15,8 @@ export * from './cloudinarySettingsInput';
 export * from './contactSettings';
 export * from './contactSettingsInput';
 export * from './healthStatus';
+export * from './heroSettings';
+export * from './heroSettingsInput';
 export * from './listCategoriesParams';
 export * from './listMediaParams';
 export * from './listTestimonialsParams';
