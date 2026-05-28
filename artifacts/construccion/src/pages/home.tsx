@@ -411,9 +411,9 @@ export default function Home() {
               target="_blank"
               rel="noopener noreferrer"
               data-testid="link-whatsapp-footer"
-              className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold px-5 sm:px-7 py-3 sm:py-4 rounded-lg shadow-lg transition-all text-sm sm:text-base w-full sm:w-auto"
+              className="inline-flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-green-600 font-bold pl-2 pr-5 py-2 sm:py-3 rounded-full shadow-lg transition-all text-sm sm:text-base w-full sm:w-auto"
             >
-              <img src="/whatsapp-logo.png" alt="WhatsApp" className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+              <img src="/whatsapp-icon.png" alt="WhatsApp" className="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 rounded-full" />
               <span className="truncate">{whatsapp}</span>
             </a>
             <a
@@ -460,11 +460,11 @@ export default function Home() {
         rel="noopener noreferrer"
         data-testid="link-whatsapp-float"
         title="Contactar por WhatsApp"
-        className="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-50 flex items-center gap-2 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold p-3 sm:pl-4 sm:pr-5 sm:py-3 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-green-500/40"
+        className="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-50 flex items-center gap-2 bg-white text-green-600 font-bold pl-1 pr-4 py-1 rounded-full shadow-2xl transition-all duration-300 hover:scale-105"
         style={{ boxShadow: "0 4px 24px 0 rgba(34,197,94,0.45)" }}
       >
-        <img src="/whatsapp-logo.png" alt="WhatsApp" className="w-6 h-6 flex-shrink-0" />
-        <span className="text-sm leading-tight hidden sm:inline">WhatsApp</span>
+        <img src="/whatsapp-icon.png" alt="WhatsApp" className="w-10 h-10 flex-shrink-0 rounded-full" />
+        <span className="text-sm font-bold leading-tight hidden sm:inline">WhatsApp</span>
       </a>
     </div>
   );
