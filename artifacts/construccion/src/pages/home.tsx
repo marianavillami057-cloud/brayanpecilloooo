@@ -163,6 +163,7 @@ export default function Home() {
   });
 
   const [lightbox, setLightbox] = useState<{ items: LightboxItem[]; index: number } | null>(null);
+  const [activeFilter, setActiveFilter] = useState<number | "extra" | null>(null);
 
   const isLoading = isLoadingCategories || isLoadingMedia;
 
@@ -230,176 +231,141 @@ export default function Home() {
           <div className="flex justify-center items-center py-32">
             <Loader2 className="w-12 h-12 animate-spin text-primary" />
           </div>
-        ) : (
-          <div className="space-y-24">
-            {categories
-              ?.filter((c) => c.active)
-              .sort((a, b) => a.order - b.order)
-              .map((category) => {
-                const categoryMedia =
-                  mediaItems
-                    ?.filter((m) => m.categoryId === category.id)
-                    .sort((a, b) => a.order - b.order) || [];
+        ) : (() => {
+          const activeCategories = (categories ?? []).filter((c) => c.active).sort((a, b) => a.order - b.order);
+          const knownCatIds = new Set((categories ?? []).map((c) => c.id));
+          const extras = (mediaItems ?? []).filter((m) => m.categoryId === 0 || !knownCatIds.has(m.categoryId)).sort((a, b) => a.order - b.order);
 
-                if (categoryMedia.length === 0) return null;
+          const catFilters = activeCategories.filter((c) => (mediaItems ?? []).some((m) => m.categoryId === c.id));
+          const hasExtras = extras.length > 0;
+          const showFilters = catFilters.length + (hasExtras ? 1 : 0) > 1;
 
-                return (
-                  <section key={category.id} className="space-y-8">
-                    <div className="flex items-center gap-5">
-                      <div className="flex items-center gap-4 shrink-0">
-                        <div className="w-1.5 h-10 rounded-full bg-primary"></div>
-                        <h2 className="text-3xl sm:text-4xl font-extrabold text-secondary uppercase tracking-widest drop-shadow-sm">
-                          {category.name}
-                        </h2>
+          const MediaCard = ({ media, allItems, idx }: { media: typeof mediaItems[0]; allItems: LightboxItem[]; idx: number }) => (
+            <div
+              key={media.id}
+              className="group rounded-xl overflow-hidden shadow-md bg-card hover:shadow-xl transition-all duration-300 border border-border cursor-pointer"
+              onClick={() => setLightbox({ items: allItems, index: idx })}
+            >
+              <div className="aspect-video relative bg-muted">
+                {media.type === "video" ? (
+                  <>
+                    <video src={media.url} className="w-full h-full object-cover" poster={media.thumbnailUrl || undefined} muted preload="metadata" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
+                      <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                        <svg className="w-6 h-6 text-secondary ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                       </div>
-                      <div className="flex-1 h-px bg-gradient-to-r from-primary/40 to-transparent"></div>
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {categoryMedia.map((media, idx) => {
-                        const allItems: LightboxItem[] = categoryMedia.map((m) => ({
-                          url: m.url,
-                          title: m.title,
-                          type: m.type as "image" | "video",
-                          thumbnailUrl: m.thumbnailUrl,
-                        }));
-                        return (
-                          <div
-                            key={media.id}
-                            className="group rounded-xl overflow-hidden shadow-md bg-card hover:shadow-xl transition-all duration-300 border border-border cursor-pointer"
-                            onClick={() => setLightbox({ items: allItems, index: idx })}
-                          >
-                            <div className="aspect-video relative bg-muted">
-                              {media.type === "video" ? (
-                                <>
-                                  <video
-                                    src={media.url}
-                                    className="w-full h-full object-cover"
-                                    poster={media.thumbnailUrl || undefined}
-                                    muted
-                                    preload="metadata"
-                                  />
-                                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
-                                    <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                      <svg className="w-6 h-6 text-secondary ml-1" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M8 5v14l11-7z"/>
-                                      </svg>
-                                    </div>
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <img
-                                    src={media.url}
-                                    alt={media.title}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                  />
-                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity w-12 h-12 rounded-full bg-white/80 flex items-center justify-center shadow">
-                                      <svg className="w-5 h-5 text-secondary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                        <path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
-                                      </svg>
-                                    </div>
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                            <div className="p-4 bg-card">
-                              <h3 className="font-semibold text-lg text-foreground line-clamp-1">
-                                {media.title}
-                              </h3>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </section>
-                );
-              })}
-
-            {/* Uncategorized items → "Más Videos y Fotos" */}
-            {(() => {
-              const knownCatIds = new Set((categories ?? []).map((c) => c.id));
-              const extras = (mediaItems ?? []).filter(
-                (m) => m.categoryId === 0 || !knownCatIds.has(m.categoryId)
-              ).sort((a, b) => a.order - b.order);
-              if (extras.length === 0) return null;
-              const allItems: LightboxItem[] = extras.map((m) => ({
-                url: m.url,
-                title: m.title,
-                type: m.type as "image" | "video",
-                thumbnailUrl: m.thumbnailUrl,
-              }));
-              return (
-                <section className="space-y-8">
-                  <div className="flex items-center gap-5">
-                    <div className="flex items-center gap-4 shrink-0">
-                      <div className="w-1.5 h-10 rounded-full bg-primary"></div>
-                      <h2 className="text-3xl sm:text-4xl font-extrabold text-secondary uppercase tracking-widest drop-shadow-sm">
-                        Más Videos y Fotos
-                      </h2>
-                    </div>
-                    <div className="flex-1 h-px bg-gradient-to-r from-primary/40 to-transparent"></div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {extras.map((media, idx) => (
-                      <div
-                        key={media.id}
-                        className="group rounded-xl overflow-hidden shadow-md bg-card hover:shadow-xl transition-all duration-300 border border-border cursor-pointer"
-                        onClick={() => setLightbox({ items: allItems, index: idx })}
-                      >
-                        <div className="aspect-video relative bg-muted">
-                          {media.type === "video" ? (
-                            <>
-                              <video
-                                src={media.url}
-                                className="w-full h-full object-cover"
-                                poster={media.thumbnailUrl || undefined}
-                                muted
-                                preload="metadata"
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
-                                <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                  <svg className="w-6 h-6 text-secondary ml-1" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M8 5v14l11-7z"/>
-                                  </svg>
-                                </div>
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <img
-                                src={media.url}
-                                alt={media.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                              />
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                <div className="opacity-0 group-hover:opacity-100 transition-opacity w-12 h-12 rounded-full bg-white/80 flex items-center justify-center shadow">
-                                  <svg className="w-5 h-5 text-secondary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
-                                  </svg>
-                                </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                        <div className="p-4 bg-card">
-                          <h3 className="font-semibold text-lg text-foreground line-clamp-1">{media.title}</h3>
-                        </div>
+                  </>
+                ) : (
+                  <>
+                    <img src={media.url} alt={media.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity w-12 h-12 rounded-full bg-white/80 flex items-center justify-center shadow">
+                        <svg className="w-5 h-5 text-secondary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/></svg>
                       </div>
-                    ))}
-                  </div>
-                </section>
-              );
-            })()}
-
-            {(!mediaItems?.length) && (
-              <div className="text-center py-20 text-muted-foreground">
-                <p className="text-xl">No hay proyectos disponibles en este momento.</p>
+                    </div>
+                  </>
+                )}
               </div>
-            )}
-          </div>
-        )}
+              <div className="p-4 bg-card">
+                <h3 className="font-semibold text-lg text-foreground line-clamp-1">{media.title}</h3>
+              </div>
+            </div>
+          );
+
+          const SectionHeader = ({ title }: { title: string }) => (
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-4 shrink-0">
+                <div className="w-1.5 h-10 rounded-full bg-primary"></div>
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-secondary uppercase tracking-widest drop-shadow-sm">{title}</h2>
+              </div>
+              <div className="flex-1 h-px bg-gradient-to-r from-primary/40 to-transparent"></div>
+            </div>
+          );
+
+          return (
+            <div className="space-y-10">
+              {/* Filter pills */}
+              {showFilters && (
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <button
+                    onClick={() => setActiveFilter(null)}
+                    className={`px-5 py-2 rounded-full text-sm font-semibold transition-all border ${
+                      activeFilter === null
+                        ? "bg-primary text-primary-foreground border-primary shadow-md"
+                        : "bg-background text-secondary border-border hover:border-primary hover:text-primary"
+                    }`}
+                  >
+                    Todos
+                  </button>
+                  {catFilters.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => setActiveFilter(c.id)}
+                      className={`px-5 py-2 rounded-full text-sm font-semibold transition-all border ${
+                        activeFilter === c.id
+                          ? "bg-primary text-primary-foreground border-primary shadow-md"
+                          : "bg-background text-secondary border-border hover:border-primary hover:text-primary"
+                      }`}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                  {hasExtras && (
+                    <button
+                      onClick={() => setActiveFilter("extra")}
+                      className={`px-5 py-2 rounded-full text-sm font-semibold transition-all border ${
+                        activeFilter === "extra"
+                          ? "bg-primary text-primary-foreground border-primary shadow-md"
+                          : "bg-background text-secondary border-border hover:border-primary hover:text-primary"
+                      }`}
+                    >
+                      Más Videos y Fotos
+                    </button>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-24">
+                {/* Category sections */}
+                {activeCategories
+                  .filter((c) => activeFilter === null || activeFilter === c.id)
+                  .map((category) => {
+                    const categoryMedia = (mediaItems ?? []).filter((m) => m.categoryId === category.id).sort((a, b) => a.order - b.order);
+                    if (categoryMedia.length === 0) return null;
+                    const allItems: LightboxItem[] = categoryMedia.map((m) => ({ url: m.url, title: m.title, type: m.type as "image" | "video", thumbnailUrl: m.thumbnailUrl }));
+                    return (
+                      <section key={category.id} className="space-y-8">
+                        {(activeFilter === null || !showFilters) && <SectionHeader title={category.name} />}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                          {categoryMedia.map((media, idx) => <MediaCard key={media.id} media={media} allItems={allItems} idx={idx} />)}
+                        </div>
+                      </section>
+                    );
+                  })}
+
+                {/* Uncategorized section */}
+                {(activeFilter === null || activeFilter === "extra") && extras.length > 0 && (() => {
+                  const allItems: LightboxItem[] = extras.map((m) => ({ url: m.url, title: m.title, type: m.type as "image" | "video", thumbnailUrl: m.thumbnailUrl }));
+                  return (
+                    <section className="space-y-8">
+                      {(activeFilter === null || !showFilters) && <SectionHeader title="Más Videos y Fotos" />}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {extras.map((media, idx) => <MediaCard key={media.id} media={media} allItems={allItems} idx={idx} />)}
+                      </div>
+                    </section>
+                  );
+                })()}
+
+                {(!mediaItems?.length) && (
+                  <div className="text-center py-20 text-muted-foreground">
+                    <p className="text-xl">No hay proyectos disponibles en este momento.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })()}
       </main>
 
       {/* Services Section */}
