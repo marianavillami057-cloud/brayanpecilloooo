@@ -13,4 +13,6 @@ export interface HeroSettings {
   coverImage: string | null;
   /** @nullable */
   tagline: string | null;
+  /** @nullable */
+  heroName: string | null;
 }

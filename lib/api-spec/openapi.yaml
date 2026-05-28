@@ -699,13 +699,15 @@ components:
 
     HeroSettings:
       type: object
-      required: [profileImage, coverImage, tagline]
+      required: [profileImage, coverImage, tagline, heroName]
       properties:
         profileImage:
           type: ["string", "null"]
         coverImage:
           type: ["string", "null"]
         tagline:
+          type: ["string", "null"]
+        heroName:
           type: ["string", "null"]
 
     HeroSettingsInput:
@@ -716,6 +718,8 @@ components:
         coverImage:
           type: ["string", "null"]
         tagline:
+          type: ["string", "null"]
+        heroName:
           type: ["string", "null"]
 
     ContactSettings:

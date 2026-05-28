@@ -148,6 +148,8 @@ export interface HeroSettings {
   coverImage: string | null;
   /** @nullable */
   tagline: string | null;
+  /** @nullable */
+  heroName: string | null;
 }
 
 export interface HeroSettingsInput {
@@ -157,6 +159,8 @@ export interface HeroSettingsInput {
   coverImage?: string | null;
   /** @nullable */
   tagline?: string | null;
+  /** @nullable */
+  heroName?: string | null;
 }
 
 export interface ContactSettings {

@@ -73,7 +73,8 @@ router.get("/hero", async (req, res) => {
     const profileImage = await getSetting("hero_profile_image");
     const coverImage = await getSetting("hero_cover_image");
     const tagline = (await getSetting("hero_tagline")) ?? "Construyendo lo que necesitas, con la garantía que mereces.";
-    return res.json({ profileImage, coverImage, tagline });
+    const heroName = (await getSetting("hero_name")) ?? "Alejandro Pecillo";
+    return res.json({ profileImage, coverImage, tagline, heroName });
   } catch (err) {
     req.log.error(err, "Failed to get hero settings");
     return res.status(500).json({ error: "Internal server error" });
@@ -83,10 +84,11 @@ router.get("/hero", async (req, res) => {
 // Protected: update hero settings
 router.put("/hero", requireAuth, async (req, res) => {
   try {
-    const { profileImage, coverImage, tagline } = req.body as {
+    const { profileImage, coverImage, tagline, heroName } = req.body as {
       profileImage?: string | null;
       coverImage?: string | null;
       tagline?: string | null;
+      heroName?: string | null;
     };
     if (profileImage !== undefined) {
       if (profileImage === null) {
@@ -109,10 +111,18 @@ router.put("/hero", requireAuth, async (req, res) => {
         await setSetting("hero_tagline", tagline.trim());
       }
     }
+    if (heroName !== undefined) {
+      if (heroName === null || heroName.trim() === "") {
+        await db.delete(settingsTable).where(eq(settingsTable.key, "hero_name"));
+      } else {
+        await setSetting("hero_name", heroName.trim());
+      }
+    }
     const finalProfile = await getSetting("hero_profile_image");
     const finalCover = await getSetting("hero_cover_image");
     const finalTagline = (await getSetting("hero_tagline")) ?? "Construyendo lo que necesitas, con la garantía que mereces.";
-    return res.json({ profileImage: finalProfile, coverImage: finalCover, tagline: finalTagline });
+    const finalHeroName = (await getSetting("hero_name")) ?? "Alejandro Pecillo";
+    return res.json({ profileImage: finalProfile, coverImage: finalCover, tagline: finalTagline, heroName: finalHeroName });
   } catch (err) {
     req.log.error(err, "Failed to update hero settings");
     return res.status(500).json({ error: "Internal server error" });

@@ -178,48 +178,48 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground font-sans">
       {/* Hero Section */}
       <header className="bg-secondary text-white">
-        {/* Cover image */}
-        <div className="relative w-full h-20 sm:h-28 md:h-32 overflow-hidden bg-secondary">
-          {heroData?.coverImage ? (
+        {/* Cover image — only shown when set */}
+        {heroData?.coverImage && (
+          <div className="relative w-full h-20 sm:h-28 md:h-32 overflow-hidden bg-secondary">
             <img
               src={heroData.coverImage}
               alt="Portada"
               className="w-full h-full object-cover"
             />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-secondary via-secondary to-secondary/80" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-secondary/60 to-transparent pointer-events-none" />
-        </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-secondary/60 to-transparent pointer-events-none" />
+          </div>
+        )}
 
         {/* Profile + info row */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-10 relative z-10">
-          <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-6 -mt-14 sm:-mt-16 md:-mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10">
+          <div className={`flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 ${heroData?.coverImage ? "-mt-14 sm:-mt-16 md:-mt-20" : ""}`}>
             {/* Profile photo */}
             <div className="flex justify-center sm:justify-start flex-shrink-0">
               <img
                 src={heroData?.profileImage || "/logo.jpeg"}
-                alt="Alejandro Pecillo"
+                alt={heroData?.heroName ?? "Alejandro Pecillo"}
                 className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 object-cover rounded-full border-4 border-white shadow-2xl bg-secondary"
               />
             </div>
 
             {/* Name, tagline, CTA */}
-            <div className="flex-1 text-center sm:text-left space-y-2 sm:space-y-3 sm:pb-2">
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight drop-shadow">
-                Alejandro Pecillo
-              </h1>
-              <p className="text-sm sm:text-lg text-white/90 font-medium max-w-lg border-l-4 border-primary pl-3 mx-auto sm:mx-0">
-                {heroData?.tagline ?? "Construyendo lo que necesitas, con la garantía que mereces."}
-              </p>
-              <div className="pt-1">
-                <a
-                  href="#portfolio"
-                  className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 py-2.5 sm:py-3 rounded-lg shadow-lg transition-all text-sm sm:text-base"
-                >
-                  Ver Proyectos
-                </a>
-              </div>
+            <div className="flex-1 text-center sm:text-left sm:pb-2">
+              {heroData?.heroName && (
+                <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight drop-shadow mb-2 sm:mb-3">
+                  {heroData.heroName}
+                </h1>
+              )}
+              {heroData?.tagline && (
+                <p className="text-sm sm:text-lg text-white/90 font-medium max-w-lg border-l-4 border-primary pl-3 mx-auto sm:mx-0 mb-3 sm:mb-4">
+                  {heroData.tagline}
+                </p>
+              )}
+              <a
+                href="#portfolio"
+                className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 py-2.5 sm:py-3 rounded-lg shadow-lg transition-all text-sm sm:text-base"
+              >
+                Ver Proyectos
+              </a>
             </div>
           </div>
         </div>

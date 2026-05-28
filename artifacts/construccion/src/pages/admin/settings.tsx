@@ -44,6 +44,7 @@ export default function AdminSettings() {
     query: { queryKey: getGetHeroSettingsQueryKey() },
   });
 
+  const [heroName, setHeroName] = useState("");
   const [tagline, setTagline] = useState("");
   const [cloudName, setCloudName] = useState("");
   const [apiKey, setApiKey] = useState("");
@@ -65,7 +66,10 @@ export default function AdminSettings() {
   const profileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (heroSettings) setTagline(heroSettings.tagline ?? "");
+    if (heroSettings) {
+      setHeroName(heroSettings.heroName ?? "");
+      setTagline(heroSettings.tagline ?? "");
+    }
   }, [heroSettings]);
 
   useEffect(() => {
@@ -344,6 +348,29 @@ export default function AdminSettings() {
                       e.target.value = "";
                     }}
                   />
+                </div>
+
+                {/* Hero Name */}
+                <div className="space-y-3 pt-2 border-t border-border">
+                  <Label className="flex items-center gap-2 text-base font-semibold">
+                    Nombre
+                  </Label>
+                  <p className="text-xs text-muted-foreground">El nombre principal que aparece en el encabezado.</p>
+                  <input
+                    type="text"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    value={heroName}
+                    onChange={(e) => setHeroName(e.target.value)}
+                    placeholder="Alejandro Pecillo"
+                  />
+                  <Button
+                    size="sm"
+                    disabled={updateHero.isPending}
+                    onClick={() => updateHero.mutate({ data: { heroName } })}
+                  >
+                    {updateHero.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Guardar nombre
+                  </Button>
                 </div>
 
                 {/* Tagline / Eslogan */}
