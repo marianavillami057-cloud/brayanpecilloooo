@@ -441,7 +441,7 @@ export default function Home() {
             <a
               href={`tel:${phoneClean}`}
               data-testid="link-phone-footer"
-              className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-5 sm:px-7 py-3 sm:py-4 rounded-lg shadow-lg transition-all text-sm sm:text-base w-full sm:w-auto"
+              className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold pl-4 pr-6 py-2 sm:py-3 rounded-full shadow-lg transition-all text-sm sm:text-base w-full sm:w-auto"
             >
               <Phone className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
               <span className="truncate">LLAMAR</span>
@@ -449,7 +449,7 @@ export default function Home() {
             <a
               href={`mailto:${email}`}
               data-testid="link-email-footer"
-              className="inline-flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 text-white font-bold px-5 sm:px-7 py-3 sm:py-4 rounded-lg shadow-lg transition-all border border-white/30 text-sm sm:text-base w-full sm:w-auto"
+              className="inline-flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 text-white font-bold pl-4 pr-6 py-2 sm:py-3 rounded-full shadow-lg transition-all border border-white/30 text-sm sm:text-base w-full sm:w-auto"
             >
               <Mail className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
               <span className="truncate">{email}</span>
