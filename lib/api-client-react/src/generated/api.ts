@@ -31,10 +31,14 @@ import type {
   HealthStatus,
   ListCategoriesParams,
   ListMediaParams,
+  ListTestimonialsParams,
   LoginInput,
   MediaInput,
   MediaItem,
   MediaUpdate,
+  Testimonial,
+  TestimonialInput,
+  TestimonialUpdate,
   UploadSignature
 } from './api.schemas';
 
@@ -1007,6 +1011,373 @@ export const useDeleteMedia = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteMediaMutationOptions(options));
+    }
+
+export const getListTestimonialsUrl = (params?: ListTestimonialsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/testimonials?${stringifiedParams}` : `/api/testimonials`
+}
+
+/**
+ * @summary List testimonials
+ */
+export const listTestimonials = async (params?: ListTestimonialsParams, options?: RequestInit): Promise<Testimonial[]> => {
+
+  return customFetch<Testimonial[]>(getListTestimonialsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListTestimonialsQueryKey = (params?: ListTestimonialsParams,) => {
+    return [
+    `/api/testimonials`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListTestimonialsQueryOptions = <TData = Awaited<ReturnType<typeof listTestimonials>>, TError = ErrorType<unknown>>(params?: ListTestimonialsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTestimonials>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListTestimonialsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTestimonials>>> = ({ signal }) => listTestimonials(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTestimonials>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListTestimonialsQueryResult = NonNullable<Awaited<ReturnType<typeof listTestimonials>>>
+export type ListTestimonialsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List testimonials
+ */
+
+export function useListTestimonials<TData = Awaited<ReturnType<typeof listTestimonials>>, TError = ErrorType<unknown>>(
+ params?: ListTestimonialsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTestimonials>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListTestimonialsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateTestimonialUrl = () => {
+
+
+
+
+  return `/api/testimonials`
+}
+
+/**
+ * @summary Create a testimonial
+ */
+export const createTestimonial = async (testimonialInput: TestimonialInput, options?: RequestInit): Promise<Testimonial> => {
+
+  return customFetch<Testimonial>(getCreateTestimonialUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      testimonialInput,)
+  }
+);}
+
+
+
+
+export const getCreateTestimonialMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTestimonial>>, TError,{data: BodyType<TestimonialInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createTestimonial>>, TError,{data: BodyType<TestimonialInput>}, TContext> => {
+
+const mutationKey = ['createTestimonial'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTestimonial>>, {data: BodyType<TestimonialInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createTestimonial(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateTestimonialMutationResult = NonNullable<Awaited<ReturnType<typeof createTestimonial>>>
+    export type CreateTestimonialMutationBody = BodyType<TestimonialInput>
+    export type CreateTestimonialMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a testimonial
+ */
+export const useCreateTestimonial = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTestimonial>>, TError,{data: BodyType<TestimonialInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createTestimonial>>,
+        TError,
+        {data: BodyType<TestimonialInput>},
+        TContext
+      > => {
+      return useMutation(getCreateTestimonialMutationOptions(options));
+    }
+
+export const getUpdateTestimonialUrl = (id: number,) => {
+
+
+
+
+  return `/api/testimonials/${id}`
+}
+
+/**
+ * @summary Update a testimonial
+ */
+export const updateTestimonial = async (id: number,
+    testimonialUpdate: TestimonialUpdate, options?: RequestInit): Promise<Testimonial> => {
+
+  return customFetch<Testimonial>(getUpdateTestimonialUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      testimonialUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateTestimonialMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTestimonial>>, TError,{id: number;data: BodyType<TestimonialUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateTestimonial>>, TError,{id: number;data: BodyType<TestimonialUpdate>}, TContext> => {
+
+const mutationKey = ['updateTestimonial'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTestimonial>>, {id: number;data: BodyType<TestimonialUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateTestimonial(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateTestimonialMutationResult = NonNullable<Awaited<ReturnType<typeof updateTestimonial>>>
+    export type UpdateTestimonialMutationBody = BodyType<TestimonialUpdate>
+    export type UpdateTestimonialMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update a testimonial
+ */
+export const useUpdateTestimonial = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTestimonial>>, TError,{id: number;data: BodyType<TestimonialUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateTestimonial>>,
+        TError,
+        {id: number;data: BodyType<TestimonialUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateTestimonialMutationOptions(options));
+    }
+
+export const getDeleteTestimonialUrl = (id: number,) => {
+
+
+
+
+  return `/api/testimonials/${id}`
+}
+
+/**
+ * @summary Delete a testimonial
+ */
+export const deleteTestimonial = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteTestimonialUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteTestimonialMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTestimonial>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteTestimonial>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteTestimonial'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTestimonial>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteTestimonial(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteTestimonialMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTestimonial>>>
+
+    export type DeleteTestimonialMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a testimonial
+ */
+export const useDeleteTestimonial = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTestimonial>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteTestimonial>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteTestimonialMutationOptions(options));
+    }
+
+export const getToggleTestimonialUrl = (id: number,) => {
+
+
+
+
+  return `/api/testimonials/${id}/toggle`
+}
+
+/**
+ * @summary Toggle testimonial active/inactive
+ */
+export const toggleTestimonial = async (id: number, options?: RequestInit): Promise<Testimonial> => {
+
+  return customFetch<Testimonial>(getToggleTestimonialUrl(id),
+  {
+    ...options,
+    method: 'PATCH'
+
+
+  }
+);}
+
+
+
+
+export const getToggleTestimonialMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof toggleTestimonial>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof toggleTestimonial>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['toggleTestimonial'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof toggleTestimonial>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  toggleTestimonial(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ToggleTestimonialMutationResult = NonNullable<Awaited<ReturnType<typeof toggleTestimonial>>>
+
+    export type ToggleTestimonialMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Toggle testimonial active/inactive
+ */
+export const useToggleTestimonial = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof toggleTestimonial>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof toggleTestimonial>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getToggleTestimonialMutationOptions(options));
     }
 
 export const getGetContactSettingsUrl = () => {

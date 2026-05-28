@@ -10,6 +10,7 @@ import AdminDashboard from "./pages/admin/dashboard";
 import AdminCategories from "./pages/admin/categories";
 import AdminMedia from "./pages/admin/media";
 import AdminSettings from "./pages/admin/settings";
+import AdminTestimonials from "./pages/admin/testimonials";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/admin/categories" component={AdminCategories} />
       <Route path="/admin/media" component={AdminMedia} />
       <Route path="/admin/settings" component={AdminSettings} />
+      <Route path="/admin/testimonios" component={AdminTestimonials} />
       <Route component={NotFound} />
     </Switch>
   );

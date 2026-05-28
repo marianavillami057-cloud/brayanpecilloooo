@@ -182,6 +182,94 @@ export const DeleteMediaParams = zod.object({
 
 
 /**
+ * @summary List testimonials
+ */
+export const ListTestimonialsQueryParams = zod.object({
+  "includeInactive": zod.coerce.boolean().optional()
+})
+
+export const ListTestimonialsResponseItem = zod.object({
+  "id": zod.number(),
+  "authorName": zod.string(),
+  "role": zod.string().nullish(),
+  "content": zod.string(),
+  "rating": zod.number(),
+  "active": zod.boolean(),
+  "order": zod.number(),
+  "createdAt": zod.string()
+})
+export const ListTestimonialsResponse = zod.array(ListTestimonialsResponseItem)
+
+
+/**
+ * @summary Create a testimonial
+ */
+export const CreateTestimonialBody = zod.object({
+  "authorName": zod.string(),
+  "role": zod.string().optional(),
+  "content": zod.string(),
+  "rating": zod.number().optional(),
+  "active": zod.boolean().optional(),
+  "order": zod.number().optional()
+})
+
+
+/**
+ * @summary Update a testimonial
+ */
+export const UpdateTestimonialParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateTestimonialBody = zod.object({
+  "authorName": zod.string().optional(),
+  "role": zod.string().optional(),
+  "content": zod.string().optional(),
+  "rating": zod.number().optional(),
+  "active": zod.boolean().optional(),
+  "order": zod.number().optional()
+})
+
+export const UpdateTestimonialResponse = zod.object({
+  "id": zod.number(),
+  "authorName": zod.string(),
+  "role": zod.string().nullish(),
+  "content": zod.string(),
+  "rating": zod.number(),
+  "active": zod.boolean(),
+  "order": zod.number(),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a testimonial
+ */
+export const DeleteTestimonialParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Toggle testimonial active/inactive
+ */
+export const ToggleTestimonialParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ToggleTestimonialResponse = zod.object({
+  "id": zod.number(),
+  "authorName": zod.string(),
+  "role": zod.string().nullish(),
+  "content": zod.string(),
+  "rating": zod.number(),
+  "active": zod.boolean(),
+  "order": zod.number(),
+  "createdAt": zod.string()
+})
+
+
+/**
  * @summary Get contact settings (public)
  */
 export const GetContactSettingsResponse = zod.object({

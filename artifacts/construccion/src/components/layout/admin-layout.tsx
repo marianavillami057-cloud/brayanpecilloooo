@@ -44,6 +44,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               <a href="/admin/dashboard" className="text-sm font-medium hover:text-white transition-colors" onClick={(e) => { e.preventDefault(); setLocation("/admin/dashboard"); }}>Dashboard</a>
               <a href="/admin/categories" className="text-sm font-medium hover:text-white transition-colors" onClick={(e) => { e.preventDefault(); setLocation("/admin/categories"); }}>Categorías</a>
               <a href="/admin/media" className="text-sm font-medium hover:text-white transition-colors" onClick={(e) => { e.preventDefault(); setLocation("/admin/media"); }}>Media</a>
+              <a href="/admin/testimonios" className="text-sm font-medium hover:text-white transition-colors" onClick={(e) => { e.preventDefault(); setLocation("/admin/testimonios"); }}>Testimonios</a>
               <a href="/admin/settings" className="text-sm font-medium hover:text-white transition-colors" onClick={(e) => { e.preventDefault(); setLocation("/admin/settings"); }}>Ajustes</a>
               <a href="/" target="_blank" rel="noreferrer" className="text-sm text-secondary-foreground/70 hover:text-white transition-colors ml-4">Ver sitio</a>
             </div>

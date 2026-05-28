@@ -99,6 +99,36 @@ export interface CloudinarySettingsInput {
   apiSecret: string;
 }
 
+export interface Testimonial {
+  id: number;
+  authorName: string;
+  /** @nullable */
+  role?: string | null;
+  content: string;
+  rating: number;
+  active: boolean;
+  order: number;
+  createdAt: string;
+}
+
+export interface TestimonialInput {
+  authorName: string;
+  role?: string;
+  content: string;
+  rating?: number;
+  active?: boolean;
+  order?: number;
+}
+
+export interface TestimonialUpdate {
+  authorName?: string;
+  role?: string;
+  content?: string;
+  rating?: number;
+  active?: boolean;
+  order?: number;
+}
+
 export interface ContactSettings {
   whatsapp: string;
   phone: string;
@@ -124,5 +154,9 @@ includeInactive?: boolean;
 
 export type ListMediaParams = {
 categoryId?: number;
+};
+
+export type ListTestimonialsParams = {
+includeInactive?: boolean;
 };
 

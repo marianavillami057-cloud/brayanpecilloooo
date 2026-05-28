@@ -2,11 +2,13 @@ import {
   useListCategories,
   useListMedia,
   useGetContactSettings,
+  useListTestimonials,
   getListCategoriesQueryKey,
   getListMediaQueryKey,
   getGetContactSettingsQueryKey,
+  getListTestimonialsQueryKey,
 } from "@workspace/api-client-react";
-import { Loader2, Phone, Mail, MessageCircle } from "lucide-react";
+import { Loader2, Phone, Mail, MessageCircle, Star } from "lucide-react";
 
 export default function Home() {
   const { data: categories, isLoading: isLoadingCategories } = useListCategories(
@@ -22,6 +24,11 @@ export default function Home() {
   const { data: contact } = useGetContactSettings({
     query: { queryKey: getGetContactSettingsQueryKey() },
   });
+
+  const { data: testimonials } = useListTestimonials(
+    { includeInactive: false },
+    { query: { queryKey: getListTestimonialsQueryKey({ includeInactive: false }) } }
+  );
 
   const isLoading = isLoadingCategories || isLoadingMedia;
 
@@ -167,6 +174,34 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {/* Testimonials Section */}
+      {testimonials && testimonials.length > 0 && (
+        <section className="bg-muted/50 py-16 border-t border-border">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-secondary uppercase tracking-wide">Lo que dicen nuestros clientes</h2>
+              <div className="w-16 h-1 bg-primary mx-auto mt-4 rounded-full"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...testimonials].sort((a, b) => a.order - b.order).map((t) => (
+                <div key={t.id} className="bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-4">
+                  <div className="flex">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className={`w-4 h-4 ${i < t.rating ? "text-amber-400 fill-amber-400" : "text-muted-foreground/30"}`} />
+                    ))}
+                  </div>
+                  <p className="text-foreground/80 italic flex-1">"{t.content}"</p>
+                  <div className="border-t border-border pt-4">
+                    <p className="font-semibold text-foreground">{t.authorName}</p>
+                    {t.role && <p className="text-sm text-muted-foreground">{t.role}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Contact Section */}
       <section className="bg-secondary text-secondary-foreground py-16">

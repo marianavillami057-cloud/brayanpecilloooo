@@ -9,6 +9,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: testimonials
+    description: Testimonials
   - name: auth
     description: Authentication
   - name: categories
@@ -252,6 +254,100 @@ paths:
         "204":
           description: Deleted
 
+  /testimonials:
+    get:
+      operationId: listTestimonials
+      tags: [testimonials]
+      summary: List testimonials
+      parameters:
+        - name: includeInactive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of testimonials
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Testimonial"
+    post:
+      operationId: createTestimonial
+      tags: [testimonials]
+      summary: Create a testimonial
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestimonialInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Testimonial"
+
+  /testimonials/{id}:
+    patch:
+      operationId: updateTestimonial
+      tags: [testimonials]
+      summary: Update a testimonial
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestimonialUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Testimonial"
+    delete:
+      operationId: deleteTestimonial
+      tags: [testimonials]
+      summary: Delete a testimonial
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /testimonials/{id}/toggle:
+    patch:
+      operationId: toggleTestimonial
+      tags: [testimonials]
+      summary: Toggle testimonial active/inactive
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Toggled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Testimonial"
+
   /settings/contact:
     get:
       operationId: getContactSettings
@@ -464,6 +560,60 @@ components:
           type: string
         apiSecret:
           type: string
+
+    Testimonial:
+      type: object
+      required: [id, authorName, content, rating, active, order, createdAt]
+      properties:
+        id:
+          type: integer
+        authorName:
+          type: string
+        role:
+          type: ["string", "null"]
+        content:
+          type: string
+        rating:
+          type: integer
+        active:
+          type: boolean
+        order:
+          type: integer
+        createdAt:
+          type: string
+
+    TestimonialInput:
+      type: object
+      required: [authorName, content]
+      properties:
+        authorName:
+          type: string
+        role:
+          type: string
+        content:
+          type: string
+        rating:
+          type: integer
+        active:
+          type: boolean
+        order:
+          type: integer
+
+    TestimonialUpdate:
+      type: object
+      properties:
+        authorName:
+          type: string
+        role:
+          type: string
+        content:
+          type: string
+        rating:
+          type: integer
+        active:
+          type: boolean
+        order:
+          type: integer
 
     ContactSettings:
       type: object
