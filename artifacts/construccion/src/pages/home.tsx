@@ -508,7 +508,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 pt-2">
             <a
-              href={`https://wa.me/${whatsappClean}`}
+              href={`https://wa.me/${whatsappClean}?text=${encodeURIComponent("Hola *Alejandro Pecillo* vengo de tu pagina web quiero cotizar un trabajo contigo.")}`}
               target="_blank"
               rel="noopener noreferrer"
               data-testid="link-whatsapp-footer"
@@ -566,7 +566,7 @@ export default function Home() {
 
       {/* Floating WhatsApp button */}
       <a
-        href={`https://wa.me/${whatsappClean}`}
+        href={`https://wa.me/${whatsappClean}?text=${encodeURIComponent("Hola *Alejandro Pecillo* vengo de tu pagina web quiero cotizar un trabajo contigo.")}`}
         target="_blank"
         rel="noopener noreferrer"
         data-testid="link-whatsapp-float"
