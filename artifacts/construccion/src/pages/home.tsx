@@ -178,7 +178,7 @@ export default function Home() {
       {/* Hero Section — Facebook-style */}
       <header className="bg-secondary text-white">
         {/* Cover image */}
-        <div className="relative w-full h-36 sm:h-52 md:h-64 overflow-hidden bg-secondary">
+        <div className="relative w-full h-20 sm:h-28 md:h-32 overflow-hidden bg-secondary">
           {heroData?.coverImage ? (
             <img
               src={heroData.coverImage}
