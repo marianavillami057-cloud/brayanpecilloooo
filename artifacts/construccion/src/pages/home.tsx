@@ -54,36 +54,6 @@ export default function Home() {
                 Construyendo lo que necesitas, con la garantía que mereces.
               </p>
 
-              {/* Contact buttons */}
-              <div className="flex flex-wrap gap-3 pt-2 justify-center md:justify-start">
-                <a
-                  href={`https://wa.me/${whatsappClean}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-testid="link-whatsapp"
-                  className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition-all"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                  WhatsApp
-                </a>
-                <a
-                  href={`tel:${phoneClean}`}
-                  data-testid="link-phone"
-                  className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 py-3 rounded-lg shadow-lg transition-all"
-                >
-                  <Phone className="w-5 h-5" />
-                  Llamar
-                </a>
-                <a
-                  href={`mailto:${email}`}
-                  data-testid="link-email"
-                  className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-bold px-6 py-3 rounded-lg shadow-lg transition-all border border-white/30"
-                >
-                  <Mail className="w-5 h-5" />
-                  Email
-                </a>
-              </div>
-
               <div className="pt-2">
                 <a
                   href="#portfolio"
@@ -248,6 +218,20 @@ export default function Home() {
           </p>
         </div>
       </footer>
+
+      {/* Floating WhatsApp button */}
+      <a
+        href={`https://wa.me/${whatsappClean}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        data-testid="link-whatsapp-float"
+        title="Contactar por WhatsApp"
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold pl-4 pr-5 py-3 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-green-500/40"
+        style={{ boxShadow: "0 4px 24px 0 rgba(34,197,94,0.45)" }}
+      >
+        <MessageCircle className="w-6 h-6 flex-shrink-0" />
+        <span className="text-sm leading-tight">WhatsApp</span>
+      </a>
     </div>
   );
 }
