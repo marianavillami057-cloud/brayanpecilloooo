@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
-}
+export type MediaItemType = typeof MediaItemType[keyof typeof MediaItemType];
+
+
+export const MediaItemType = {
+  photo: 'photo',
+  video: 'video',
+} as const;
