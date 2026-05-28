@@ -99,6 +99,18 @@ export interface CloudinarySettingsInput {
   apiSecret: string;
 }
 
+export interface ContactSettings {
+  whatsapp: string;
+  phone: string;
+  email: string;
+}
+
+export interface ContactSettingsInput {
+  whatsapp: string;
+  phone: string;
+  email: string;
+}
+
 export interface UploadSignature {
   signature: string;
   timestamp: number;

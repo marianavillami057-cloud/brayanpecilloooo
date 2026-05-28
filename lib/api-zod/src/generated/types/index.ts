@@ -12,6 +12,8 @@ export * from './categoryInput';
 export * from './categoryUpdate';
 export * from './cloudinarySettings';
 export * from './cloudinarySettingsInput';
+export * from './contactSettings';
+export * from './contactSettingsInput';
 export * from './healthStatus';
 export * from './listCategoriesParams';
 export * from './listMediaParams';

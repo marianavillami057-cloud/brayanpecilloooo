@@ -252,6 +252,36 @@ paths:
         "204":
           description: Deleted
 
+  /settings/contact:
+    get:
+      operationId: getContactSettings
+      tags: [settings]
+      summary: Get contact settings (public)
+      responses:
+        "200":
+          description: Contact settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactSettings"
+    put:
+      operationId: updateContactSettings
+      tags: [settings]
+      summary: Update contact settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactSettingsInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactSettings"
+
   /settings/cloudinary:
     get:
       operationId: getCloudinarySettings
@@ -433,6 +463,28 @@ components:
         apiKey:
           type: string
         apiSecret:
+          type: string
+
+    ContactSettings:
+      type: object
+      required: [whatsapp, phone, email]
+      properties:
+        whatsapp:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+
+    ContactSettingsInput:
+      type: object
+      required: [whatsapp, phone, email]
+      properties:
+        whatsapp:
+          type: string
+        phone:
+          type: string
+        email:
           type: string
 
     UploadSignature:

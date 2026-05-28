@@ -182,6 +182,32 @@ export const DeleteMediaParams = zod.object({
 
 
 /**
+ * @summary Get contact settings (public)
+ */
+export const GetContactSettingsResponse = zod.object({
+  "whatsapp": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string()
+})
+
+
+/**
+ * @summary Update contact settings
+ */
+export const UpdateContactSettingsBody = zod.object({
+  "whatsapp": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string()
+})
+
+export const UpdateContactSettingsResponse = zod.object({
+  "whatsapp": zod.string(),
+  "phone": zod.string(),
+  "email": zod.string()
+})
+
+
+/**
  * @summary Get Cloudinary settings
  */
 export const GetCloudinarySettingsResponse = zod.object({

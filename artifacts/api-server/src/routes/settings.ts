@@ -67,4 +67,35 @@ router.put("/cloudinary", requireAuth, async (req, res) => {
   }
 });
 
+// Public: get contact settings
+router.get("/contact", async (req, res) => {
+  try {
+    const whatsapp = (await getSetting("contact_whatsapp")) ?? "+573159907313";
+    const phone = (await getSetting("contact_phone")) ?? "+573159907313";
+    const email = (await getSetting("contact_email")) ?? "alejandropecillo168@gmail.com";
+    return res.json({ whatsapp, phone, email });
+  } catch (err) {
+    req.log.error(err, "Failed to get contact settings");
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Protected: update contact settings
+router.put("/contact", requireAuth, async (req, res) => {
+  try {
+    const { whatsapp, phone, email } = req.body as {
+      whatsapp: string;
+      phone: string;
+      email: string;
+    };
+    await setSetting("contact_whatsapp", whatsapp);
+    await setSetting("contact_phone", phone);
+    await setSetting("contact_email", email);
+    return res.json({ whatsapp, phone, email });
+  } catch (err) {
+    req.log.error(err, "Failed to update contact settings");
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 export default router;
