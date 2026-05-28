@@ -413,7 +413,7 @@ export default function Home() {
               data-testid="link-whatsapp-footer"
               className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold px-5 sm:px-7 py-3 sm:py-4 rounded-lg shadow-lg transition-all text-sm sm:text-base w-full sm:w-auto"
             >
-              <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+              <img src="/whatsapp-logo.png" alt="WhatsApp" className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
               <span className="truncate">{whatsapp}</span>
             </a>
             <a
@@ -463,7 +463,7 @@ export default function Home() {
         className="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-50 flex items-center gap-2 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold p-3 sm:pl-4 sm:pr-5 sm:py-3 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-green-500/40"
         style={{ boxShadow: "0 4px 24px 0 rgba(34,197,94,0.45)" }}
       >
-        <MessageCircle className="w-6 h-6 flex-shrink-0" />
+        <img src="/whatsapp-logo.png" alt="WhatsApp" className="w-6 h-6 flex-shrink-0" />
         <span className="text-sm leading-tight hidden sm:inline">WhatsApp</span>
       </a>
     </div>
