@@ -129,6 +129,18 @@ export interface TestimonialUpdate {
   order?: number;
 }
 
+export interface StatsSettings {
+  projects: number;
+  years: number;
+  satisfaction: number;
+}
+
+export interface StatsSettingsInput {
+  projects: number;
+  years: number;
+  satisfaction: number;
+}
+
 export interface ContactSettings {
   whatsapp: string;
   phone: string;

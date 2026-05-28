@@ -5,15 +5,18 @@ import {
   useUpdateCloudinarySettings,
   useGetContactSettings,
   useUpdateContactSettings,
+  useGetStatsSettings,
+  useUpdateStatsSettings,
   getGetCloudinarySettingsQueryKey,
   getGetContactSettingsQueryKey,
+  getGetStatsSettingsQueryKey,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CheckCircle2, AlertCircle, Phone, Mail, MessageCircle } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Phone, Mail, MessageCircle, BarChart2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function AdminSettings() {
@@ -28,6 +31,10 @@ export default function AdminSettings() {
     query: { queryKey: getGetContactSettingsQueryKey() },
   });
 
+  const { data: statsSettings, isLoading: isLoadingStats } = useGetStatsSettings({
+    query: { queryKey: getGetStatsSettingsQueryKey() },
+  });
+
   const [cloudName, setCloudName] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [apiSecret, setApiSecret] = useState("");
@@ -35,6 +42,10 @@ export default function AdminSettings() {
   const [whatsapp, setWhatsapp] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+
+  const [statProjects, setStatProjects] = useState(50);
+  const [statYears, setStatYears] = useState(8);
+  const [statSatisfaction, setStatSatisfaction] = useState(100);
 
   useEffect(() => {
     if (cloudinarySettings) {
@@ -50,6 +61,14 @@ export default function AdminSettings() {
     }
   }, [contactSettings]);
 
+  useEffect(() => {
+    if (statsSettings) {
+      setStatProjects(statsSettings.projects ?? 50);
+      setStatYears(statsSettings.years ?? 8);
+      setStatSatisfaction(statsSettings.satisfaction ?? 100);
+    }
+  }, [statsSettings]);
+
   const updateCloudinary = useUpdateCloudinarySettings({
     mutation: {
       onSuccess: () => {
@@ -57,6 +76,18 @@ export default function AdminSettings() {
         toast({ title: "Configuración de Cloudinary guardada" });
         setApiKey("");
         setApiSecret("");
+      },
+      onError: () => {
+        toast({ title: "Error al guardar", variant: "destructive" });
+      },
+    },
+  });
+
+  const updateStats = useUpdateStatsSettings({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getGetStatsSettingsQueryKey() });
+        toast({ title: "Estadísticas guardadas" });
       },
       onError: () => {
         toast({ title: "Error al guardar", variant: "destructive" });
@@ -94,6 +125,11 @@ export default function AdminSettings() {
     updateContact.mutate({ data: { whatsapp, phone, email } });
   };
 
+  const handleStatsSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateStats.mutate({ data: { projects: statProjects, years: statYears, satisfaction: statSatisfaction } });
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-8 max-w-2xl">
@@ -101,6 +137,70 @@ export default function AdminSettings() {
           <h1 className="text-3xl font-bold tracking-tight text-secondary">Ajustes del Sistema</h1>
           <p className="text-muted-foreground mt-1">Configura los datos de contacto y el almacenamiento de archivos.</p>
         </div>
+
+        {/* Stats Settings */}
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart2 className="w-5 h-5 text-primary" />
+              Estadísticas del Sitio
+            </CardTitle>
+            <CardDescription>
+              Estos números aparecen en la página pública. Actualízalos cuando crezcas.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoadingStats ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : (
+              <form onSubmit={handleStatsSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Proyectos Terminados</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={statProjects}
+                    onChange={(e) => setStatProjects(Number(e.target.value))}
+                    placeholder="ej. 50"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">Se muestra como "50+" en la página.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Años de Experiencia</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={statYears}
+                    onChange={(e) => setStatYears(Number(e.target.value))}
+                    placeholder="ej. 8"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">Se muestra como "8+" en la página.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Clientes Satisfechos (%)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={statSatisfaction}
+                    onChange={(e) => setStatSatisfaction(Number(e.target.value))}
+                    placeholder="ej. 100"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">Se muestra como "100%" en la página.</p>
+                </div>
+                <Button type="submit" disabled={updateStats.isPending}>
+                  {updateStats.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Guardar Estadísticas
+                </Button>
+              </form>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Contact Settings */}
         <Card className="border-border">

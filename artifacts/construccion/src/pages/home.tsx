@@ -3,10 +3,12 @@ import {
   useListMedia,
   useGetContactSettings,
   useListTestimonials,
+  useGetStatsSettings,
   getListCategoriesQueryKey,
   getListMediaQueryKey,
   getGetContactSettingsQueryKey,
   getListTestimonialsQueryKey,
+  getGetStatsSettingsQueryKey,
 } from "@workspace/api-client-react";
 import { Loader2, MessageCircle, Star, HardHat, Hammer, PaintBucket, Ruler, Phone, Mail } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -62,6 +64,10 @@ export default function Home() {
     { includeInactive: false },
     { query: { queryKey: getListTestimonialsQueryKey({ includeInactive: false }) } }
   );
+
+  const { data: statsData } = useGetStatsSettings({
+    query: { queryKey: getGetStatsSettingsQueryKey() },
+  });
 
   const isLoading = isLoadingCategories || isLoadingMedia;
 
@@ -153,21 +159,21 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
             <div className="flex flex-col items-center gap-2">
               <p className="text-5xl font-extrabold text-primary">
-                <CountUp target={50} />+
+                <CountUp target={statsData?.projects ?? 50} />+
               </p>
               <p className="text-lg font-semibold text-secondary-foreground/90 uppercase tracking-wide">Proyectos Terminados</p>
               <p className="text-sm text-secondary-foreground/60">Obras entregadas con éxito en toda la región</p>
             </div>
             <div className="flex flex-col items-center gap-2 sm:border-x border-secondary-foreground/20">
               <p className="text-5xl font-extrabold text-primary">
-                <CountUp target={8} />+
+                <CountUp target={statsData?.years ?? 8} />+
               </p>
               <p className="text-lg font-semibold text-secondary-foreground/90 uppercase tracking-wide">Años de Experiencia</p>
               <p className="text-sm text-secondary-foreground/60">Trayectoria y conocimiento en construcción</p>
             </div>
             <div className="flex flex-col items-center gap-2">
               <p className="text-5xl font-extrabold text-primary">
-                <CountUp target={100} />%
+                <CountUp target={statsData?.satisfaction ?? 100} />%
               </p>
               <p className="text-lg font-semibold text-secondary-foreground/90 uppercase tracking-wide">Clientes Satisfechos</p>
               <p className="text-sm text-secondary-foreground/60">Compromiso total con cada proyecto</p>

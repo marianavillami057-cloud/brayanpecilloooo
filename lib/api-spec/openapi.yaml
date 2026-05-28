@@ -378,6 +378,36 @@ paths:
               schema:
                 $ref: "#/components/schemas/ContactSettings"
 
+  /settings/stats:
+    get:
+      operationId: getStatsSettings
+      tags: [settings]
+      summary: Get stats settings (public)
+      responses:
+        "200":
+          description: Stats settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsSettings"
+    put:
+      operationId: updateStatsSettings
+      tags: [settings]
+      summary: Update stats settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StatsSettingsInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsSettings"
+
   /settings/cloudinary:
     get:
       operationId: getCloudinarySettings
@@ -613,6 +643,28 @@ components:
         active:
           type: boolean
         order:
+          type: integer
+
+    StatsSettings:
+      type: object
+      required: [projects, years, satisfaction]
+      properties:
+        projects:
+          type: integer
+        years:
+          type: integer
+        satisfaction:
+          type: integer
+
+    StatsSettingsInput:
+      type: object
+      required: [projects, years, satisfaction]
+      properties:
+        projects:
+          type: integer
+        years:
+          type: integer
+        satisfaction:
           type: integer
 
     ContactSettings:

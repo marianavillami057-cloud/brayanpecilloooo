@@ -36,6 +36,8 @@ import type {
   MediaInput,
   MediaItem,
   MediaUpdate,
+  StatsSettings,
+  StatsSettingsInput,
   Testimonial,
   TestimonialInput,
   TestimonialUpdate,
@@ -1526,6 +1528,154 @@ export const useUpdateContactSettings = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUpdateContactSettingsMutationOptions(options));
+    }
+
+export const getGetStatsSettingsUrl = () => {
+
+
+
+
+  return `/api/settings/stats`
+}
+
+/**
+ * @summary Get stats settings (public)
+ */
+export const getStatsSettings = async ( options?: RequestInit): Promise<StatsSettings> => {
+
+  return customFetch<StatsSettings>(getGetStatsSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetStatsSettingsQueryKey = () => {
+    return [
+    `/api/settings/stats`
+    ] as const;
+    }
+
+
+export const getGetStatsSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getStatsSettings>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getStatsSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStatsSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStatsSettings>>> = ({ signal }) => getStatsSettings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStatsSettings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetStatsSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getStatsSettings>>>
+export type GetStatsSettingsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get stats settings (public)
+ */
+
+export function useGetStatsSettings<TData = Awaited<ReturnType<typeof getStatsSettings>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getStatsSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetStatsSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateStatsSettingsUrl = () => {
+
+
+
+
+  return `/api/settings/stats`
+}
+
+/**
+ * @summary Update stats settings
+ */
+export const updateStatsSettings = async (statsSettingsInput: StatsSettingsInput, options?: RequestInit): Promise<StatsSettings> => {
+
+  return customFetch<StatsSettings>(getUpdateStatsSettingsUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      statsSettingsInput,)
+  }
+);}
+
+
+
+
+export const getUpdateStatsSettingsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateStatsSettings>>, TError,{data: BodyType<StatsSettingsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateStatsSettings>>, TError,{data: BodyType<StatsSettingsInput>}, TContext> => {
+
+const mutationKey = ['updateStatsSettings'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateStatsSettings>>, {data: BodyType<StatsSettingsInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateStatsSettings(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateStatsSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateStatsSettings>>>
+    export type UpdateStatsSettingsMutationBody = BodyType<StatsSettingsInput>
+    export type UpdateStatsSettingsMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update stats settings
+ */
+export const useUpdateStatsSettings = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateStatsSettings>>, TError,{data: BodyType<StatsSettingsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateStatsSettings>>,
+        TError,
+        {data: BodyType<StatsSettingsInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateStatsSettingsMutationOptions(options));
     }
 
 export const getGetCloudinarySettingsUrl = () => {

@@ -296,6 +296,32 @@ export const UpdateContactSettingsResponse = zod.object({
 
 
 /**
+ * @summary Get stats settings (public)
+ */
+export const GetStatsSettingsResponse = zod.object({
+  "projects": zod.number(),
+  "years": zod.number(),
+  "satisfaction": zod.number()
+})
+
+
+/**
+ * @summary Update stats settings
+ */
+export const UpdateStatsSettingsBody = zod.object({
+  "projects": zod.number(),
+  "years": zod.number(),
+  "satisfaction": zod.number()
+})
+
+export const UpdateStatsSettingsResponse = zod.object({
+  "projects": zod.number(),
+  "years": zod.number(),
+  "satisfaction": zod.number()
+})
+
+
+/**
  * @summary Get Cloudinary settings
  */
 export const GetCloudinarySettingsResponse = zod.object({

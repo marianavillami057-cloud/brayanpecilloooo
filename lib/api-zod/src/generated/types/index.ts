@@ -24,6 +24,8 @@ export * from './mediaInputType';
 export * from './mediaItem';
 export * from './mediaItemType';
 export * from './mediaUpdate';
+export * from './statsSettings';
+export * from './statsSettingsInput';
 export * from './testimonial';
 export * from './testimonialInput';
 export * from './testimonialUpdate';

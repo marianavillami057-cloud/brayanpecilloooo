@@ -98,4 +98,35 @@ router.put("/contact", requireAuth, async (req, res) => {
   }
 });
 
+// Public: get stats settings
+router.get("/stats", async (req, res) => {
+  try {
+    const projects = parseInt((await getSetting("stat_projects")) ?? "50", 10);
+    const years = parseInt((await getSetting("stat_years")) ?? "8", 10);
+    const satisfaction = parseInt((await getSetting("stat_satisfaction")) ?? "100", 10);
+    return res.json({ projects, years, satisfaction });
+  } catch (err) {
+    req.log.error(err, "Failed to get stats settings");
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Protected: update stats settings
+router.put("/stats", requireAuth, async (req, res) => {
+  try {
+    const { projects, years, satisfaction } = req.body as {
+      projects: number;
+      years: number;
+      satisfaction: number;
+    };
+    await setSetting("stat_projects", String(projects));
+    await setSetting("stat_years", String(years));
+    await setSetting("stat_satisfaction", String(satisfaction));
+    return res.json({ projects, years, satisfaction });
+  } catch (err) {
+    req.log.error(err, "Failed to update stats settings");
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 export default router;
