@@ -545,7 +545,7 @@ export default function Home() {
         </div>
         <div className="bg-secondary-foreground/10 py-3 text-center">
           <a
-            href={`https://wa.me/573166653152?text=${encodeURIComponent("Hola Alexander he hecho click aqui porque quiero que me hagas una pagina web")}`}
+            href={`https://wa.me/573166653152?text=${encodeURIComponent("Hola Alexander he hecho click aqui desde la pagina de Alejandro Pecillo Construcción (" + window.location.href + ") porque quiero que me hagas una pagina web")}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-secondary-foreground/60 hover:text-secondary-foreground text-sm transition-colors underline underline-offset-2"
