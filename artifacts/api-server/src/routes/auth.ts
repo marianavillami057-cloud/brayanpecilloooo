@@ -3,8 +3,8 @@ import { logger } from "../lib/logger";
 
 const router = Router();
 
-const ADMIN_EMAIL = "admin@alejandropecillo";
-const ADMIN_PASSWORD = "alejandro2026@@@";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "admin@alejandropecillo";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "alejandro2026@@@";
 
 declare module "express-serve-static-core" {
   interface Request {
