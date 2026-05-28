@@ -537,11 +537,21 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="bg-secondary text-secondary-foreground py-8 border-t border-secondary-border/20">
-        <div className="max-w-7xl mx-auto px-4 text-center">
+      <footer className="bg-secondary text-secondary-foreground border-t border-secondary-border/20">
+        <div className="max-w-7xl mx-auto px-4 py-8 text-center">
           <p className="text-secondary-foreground/70 font-medium">
             &copy; {new Date().getFullYear()} Alejandro Pecillo Construcción. Todos los derechos reservados.
           </p>
+        </div>
+        <div className="bg-secondary-foreground/10 py-3 text-center">
+          <a
+            href={`https://wa.me/573166653152?text=${encodeURIComponent("Hola Alexander he hecho click aqui porque quiero que me hagas una pagina web")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-secondary-foreground/60 hover:text-secondary-foreground text-sm transition-colors underline underline-offset-2"
+          >
+            Página hecha por Alexander Nazari — haz click aquí para contactar
+          </a>
         </div>
       </footer>
 
