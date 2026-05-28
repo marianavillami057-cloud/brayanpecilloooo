@@ -210,7 +210,7 @@ export default function Home() {
                 Alejandro Pecillo
               </h1>
               <p className="text-sm sm:text-lg text-white/90 font-medium max-w-lg border-l-4 border-primary pl-3 mx-auto sm:mx-0">
-                Construyendo lo que necesitas, con la garantía que mereces.
+                {heroData?.tagline ?? "Construyendo lo que necesitas, con la garantía que mereces."}
               </p>
               <div className="pt-1">
                 <a

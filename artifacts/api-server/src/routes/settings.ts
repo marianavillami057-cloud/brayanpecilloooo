@@ -72,7 +72,8 @@ router.get("/hero", async (req, res) => {
   try {
     const profileImage = await getSetting("hero_profile_image");
     const coverImage = await getSetting("hero_cover_image");
-    return res.json({ profileImage, coverImage });
+    const tagline = (await getSetting("hero_tagline")) ?? "Construyendo lo que necesitas, con la garantía que mereces.";
+    return res.json({ profileImage, coverImage, tagline });
   } catch (err) {
     req.log.error(err, "Failed to get hero settings");
     return res.status(500).json({ error: "Internal server error" });
@@ -82,9 +83,10 @@ router.get("/hero", async (req, res) => {
 // Protected: update hero settings
 router.put("/hero", requireAuth, async (req, res) => {
   try {
-    const { profileImage, coverImage } = req.body as {
+    const { profileImage, coverImage, tagline } = req.body as {
       profileImage?: string | null;
       coverImage?: string | null;
+      tagline?: string | null;
     };
     if (profileImage !== undefined) {
       if (profileImage === null) {
@@ -100,9 +102,17 @@ router.put("/hero", requireAuth, async (req, res) => {
         await setSetting("hero_cover_image", coverImage);
       }
     }
+    if (tagline !== undefined) {
+      if (tagline === null || tagline.trim() === "") {
+        await db.delete(settingsTable).where(eq(settingsTable.key, "hero_tagline"));
+      } else {
+        await setSetting("hero_tagline", tagline.trim());
+      }
+    }
     const finalProfile = await getSetting("hero_profile_image");
     const finalCover = await getSetting("hero_cover_image");
-    return res.json({ profileImage: finalProfile, coverImage: finalCover });
+    const finalTagline = (await getSetting("hero_tagline")) ?? "Construyendo lo que necesitas, con la garantía que mereces.";
+    return res.json({ profileImage: finalProfile, coverImage: finalCover, tagline: finalTagline });
   } catch (err) {
     req.log.error(err, "Failed to update hero settings");
     return res.status(500).json({ error: "Internal server error" });

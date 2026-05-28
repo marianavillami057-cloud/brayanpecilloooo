@@ -44,6 +44,7 @@ export default function AdminSettings() {
     query: { queryKey: getGetHeroSettingsQueryKey() },
   });
 
+  const [tagline, setTagline] = useState("");
   const [cloudName, setCloudName] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [apiSecret, setApiSecret] = useState("");
@@ -62,6 +63,10 @@ export default function AdminSettings() {
 
   const coverInputRef = useRef<HTMLInputElement>(null);
   const profileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (heroSettings) setTagline(heroSettings.tagline ?? "");
+  }, [heroSettings]);
 
   useEffect(() => {
     if (cloudinarySettings) setCloudName(cloudinarySettings.cloudName || "");
@@ -339,6 +344,29 @@ export default function AdminSettings() {
                       e.target.value = "";
                     }}
                   />
+                </div>
+
+                {/* Tagline / Eslogan */}
+                <div className="space-y-3 pt-2 border-t border-border">
+                  <Label className="flex items-center gap-2 text-base font-semibold">
+                    Eslogan
+                  </Label>
+                  <p className="text-xs text-muted-foreground">El texto que aparece debajo del nombre en la página principal.</p>
+                  <textarea
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                    rows={2}
+                    value={tagline}
+                    onChange={(e) => setTagline(e.target.value)}
+                    placeholder="Construyendo lo que necesitas, con la garantía que mereces."
+                  />
+                  <Button
+                    size="sm"
+                    disabled={updateHero.isPending}
+                    onClick={() => updateHero.mutate({ data: { tagline } })}
+                  >
+                    {updateHero.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Guardar eslogan
+                  </Button>
                 </div>
               </div>
             )}

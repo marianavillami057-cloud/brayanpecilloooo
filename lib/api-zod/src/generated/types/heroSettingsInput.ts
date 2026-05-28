@@ -11,4 +11,6 @@ export interface HeroSettingsInput {
   profileImage?: string | null;
   /** @nullable */
   coverImage?: string | null;
+  /** @nullable */
+  tagline?: string | null;
 }
