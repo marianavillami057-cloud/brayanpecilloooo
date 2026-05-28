@@ -1,23 +1,148 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/layout/admin-layout";
-import { 
-  useListCategories, 
-  useListMedia, 
-  useCreateMedia, 
-  useDeleteMedia, 
+import {
+  useListCategories,
+  useListMedia,
+  useCreateMedia,
+  useUpdateMedia,
+  useDeleteMedia,
   useGetUploadSignature,
   useGetCloudinarySettings,
-  getListMediaQueryKey
+  getListMediaQueryKey,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Loader2, Image as ImageIcon, Video, UploadCloud } from "lucide-react";
+import { Plus, Trash2, Loader2, Video, UploadCloud, GripVertical, Tag } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+type MediaItem = {
+  id: number;
+  title: string;
+  type: string;
+  url: string;
+  categoryId: number;
+  order: number;
+  thumbnailUrl?: string | null;
+};
+
+function SortableMediaCard({
+  item,
+  categories,
+  onDelete,
+  onCategoryChange,
+}: {
+  item: MediaItem;
+  categories: { id: number; name: string }[];
+  onDelete: (id: number) => void;
+  onCategoryChange: (id: number, categoryId: number) => void;
+}) {
+  const [showCatPicker, setShowCatPicker] = useState(false);
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+    zIndex: isDragging ? 50 : undefined,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="group relative rounded-lg border border-border bg-card overflow-hidden select-none">
+      {/* Drag handle */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="absolute top-1.5 left-1.5 z-10 bg-black/50 text-white rounded p-0.5 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+        title="Arrastrar para reordenar"
+      >
+        <GripVertical className="w-3.5 h-3.5" />
+      </div>
+
+      <div className="aspect-square bg-muted relative">
+        {item.type === "video" ? (
+          <div className="w-full h-full flex items-center justify-center bg-black/10">
+            <Video className="w-8 h-8 text-muted-foreground" />
+          </div>
+        ) : (
+          <img src={item.url} alt={item.title} className="w-full h-full object-cover" />
+        )}
+
+        {/* Hover overlay: delete + category */}
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+          <Button
+            variant="destructive"
+            size="icon"
+            className="h-8 w-8"
+            onClick={() => {
+              if (confirm("¿Eliminar este archivo?")) onDelete(item.id);
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="secondary"
+            size="icon"
+            className="h-8 w-8"
+            title="Cambiar categoría"
+            onClick={() => setShowCatPicker((v) => !v)}
+          >
+            <Tag className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Category picker */}
+      {showCatPicker && (
+        <div className="absolute inset-x-0 bottom-0 z-20 bg-card border-t border-border p-2 shadow-lg">
+          <Select
+            value={item.categoryId.toString()}
+            onValueChange={(v) => {
+              onCategoryChange(item.id, parseInt(v));
+              setShowCatPicker(false);
+            }}
+          >
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((c) => (
+                <SelectItem key={c.id} value={c.id.toString()} className="text-xs">
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      <div className="p-2 text-xs font-medium truncate" title={item.title}>
+        {item.title}
+      </div>
+    </div>
+  );
+}
 
 export default function AdminMedia() {
   const queryClient = useQueryClient();
@@ -25,19 +150,29 @@ export default function AdminMedia() {
 
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  
-  // Form state
+
   const [title, setTitle] = useState("");
   const [type, setType] = useState<"photo" | "video">("photo");
   const [categoryId, setCategoryId] = useState("");
-  const [order, setOrder] = useState("");
   const [file, setFile] = useState<File | null>(null);
 
   const { data: categories } = useListCategories({ includeInactive: true });
-  const { data: mediaItems, isLoading } = useListMedia({}, { query: { queryKey: getListMediaQueryKey({}) } });
+  const { data: mediaItems, isLoading } = useListMedia(
+    {},
+    { query: { queryKey: getListMediaQueryKey({}) } }
+  );
   const { data: cloudinarySettings } = useGetCloudinarySettings();
 
+  // Local state for optimistic drag-and-drop
+  const [localMedia, setLocalMedia] = useState<MediaItem[]>([]);
+  useEffect(() => {
+    if (mediaItems) setLocalMedia(mediaItems as MediaItem[]);
+  }, [mediaItems]);
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
   const getSignatureMutation = useGetUploadSignature();
+
   const createMediaMutation = useCreateMedia({
     mutation: {
       onSuccess: () => {
@@ -45,8 +180,14 @@ export default function AdminMedia() {
         setIsUploadOpen(false);
         resetForm();
         toast({ title: "Archivo subido correctamente" });
-      }
-    }
+      },
+    },
+  });
+
+  const updateMediaMutation = useUpdateMedia({
+    mutation: {
+      onError: () => toast({ title: "Error al guardar orden", variant: "destructive" }),
+    },
   });
 
   const deleteMediaMutation = useDeleteMedia({
@@ -54,34 +195,33 @@ export default function AdminMedia() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListMediaQueryKey({}) });
         toast({ title: "Archivo eliminado" });
-      }
-    }
+      },
+    },
   });
 
   const resetForm = () => {
     setTitle("");
     setType("photo");
     setCategoryId("");
-    setOrder("");
     setFile(null);
   };
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || !categoryId) return;
-    
+
     if (!cloudinarySettings?.hasApiKey || !cloudinarySettings?.cloudName) {
-      toast({ title: "Error de configuración", description: "Faltan datos de Cloudinary en Ajustes", variant: "destructive" });
+      toast({
+        title: "Error de configuración",
+        description: "Faltan datos de Cloudinary en Ajustes",
+        variant: "destructive",
+      });
       return;
     }
 
     try {
       setIsUploading(true);
-      
-      // 1. Get Signature
       const sigData = await getSignatureMutation.mutateAsync({});
-      
-      // 2. Upload to Cloudinary
       const uploadResult = await uploadToCloudinary(
         file,
         sigData.signature,
@@ -90,18 +230,21 @@ export default function AdminMedia() {
         sigData.cloudName
       );
 
-      // 3. Create Media Record
+      // Calculate order as max + 1 in this category
+      const catId = parseInt(categoryId);
+      const catItems = localMedia.filter((m) => m.categoryId === catId);
+      const nextOrder = catItems.length > 0 ? Math.max(...catItems.map((m) => m.order)) + 1 : 0;
+
       await createMediaMutation.mutateAsync({
         data: {
           title,
           type,
           url: uploadResult.secure_url,
           publicId: uploadResult.public_id,
-          categoryId: parseInt(categoryId),
-          order: parseInt(order) || 0
-        }
+          categoryId: catId,
+          order: nextOrder,
+        },
       });
-      
     } catch (err: any) {
       toast({ title: "Error al subir", description: err.message, variant: "destructive" });
     } finally {
@@ -109,15 +252,69 @@ export default function AdminMedia() {
     }
   };
 
+  const handleDragEnd = (event: DragEndEvent, groupCategoryId: number) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setLocalMedia((prev) => {
+      const groupItems = prev
+        .filter((m) => m.categoryId === groupCategoryId)
+        .sort((a, b) => a.order - b.order);
+      const otherItems = prev.filter((m) => m.categoryId !== groupCategoryId);
+
+      const oldIndex = groupItems.findIndex((m) => m.id === active.id);
+      const newIndex = groupItems.findIndex((m) => m.id === over.id);
+      const reordered = arrayMove(groupItems, oldIndex, newIndex);
+
+      // Assign new sequential orders and save
+      reordered.forEach((item, idx) => {
+        if (item.order !== idx) {
+          updateMediaMutation.mutate({ id: item.id, data: { order: idx } });
+        }
+      });
+
+      return [...otherItems, ...reordered.map((item, idx) => ({ ...item, order: idx }))];
+    });
+  };
+
+  const handleCategoryChange = (mediaId: number, newCategoryId: number) => {
+    // Calculate order as last in the new category
+    const catItems = localMedia.filter((m) => m.categoryId === newCategoryId);
+    const nextOrder = catItems.length > 0 ? Math.max(...catItems.map((m) => m.order)) + 1 : 0;
+
+    updateMediaMutation.mutate(
+      { id: mediaId, data: { categoryId: newCategoryId, order: nextOrder } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListMediaQueryKey({}) });
+          toast({ title: "Categoría actualizada" });
+        },
+      }
+    );
+    setLocalMedia((prev) =>
+      prev.map((m) =>
+        m.id === mediaId ? { ...m, categoryId: newCategoryId, order: nextOrder } : m
+      )
+    );
+  };
+
+  const sortedCategories = [...(categories ?? [])].sort((a, b) => a.order - b.order);
+
+  // Find items whose categoryId doesn't match any known category
+  const knownCatIds = new Set((categories ?? []).map((c) => c.id));
+  const uncategorized = localMedia.filter((m) => !knownCatIds.has(m.categoryId));
+
   return (
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-secondary">Media</h1>
-            <p className="text-muted-foreground mt-1">Sube y gestiona fotos y videos de tus proyectos.</p>
+            <p className="text-muted-foreground mt-1">
+              Sube y gestiona fotos y videos. Arrastra para reordenar.
+            </p>
           </div>
-          
+
           <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
             <DialogTrigger asChild>
               <Button className="bg-primary hover:bg-primary/90">
@@ -125,20 +322,23 @@ export default function AdminMedia() {
                 Subir Archivo
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[480px]">
               <DialogHeader>
                 <DialogTitle>Subir Nuevo Archivo</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleUpload} className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Título / Descripción corta</Label>
-                  <Input required value={title} onChange={e => setTitle(e.target.value)} />
+                  <Label>Título / Descripción</Label>
+                  <Input required value={title} onChange={(e) => setTitle(e.target.value)} />
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Tipo</Label>
-                    <Select value={type} onValueChange={(v: "photo" | "video") => setType(v)}>
+                    <Select
+                      value={type}
+                      onValueChange={(v: "photo" | "video") => setType(v)}
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -149,14 +349,16 @@ export default function AdminMedia() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Categoría</Label>
+                    <Label>Categoría *</Label>
                     <Select value={categoryId} onValueChange={setCategoryId} required>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories?.map(c => (
-                          <SelectItem key={c.id} value={c.id.toString()}>{c.name}</SelectItem>
+                        {sortedCategories.map((c) => (
+                          <SelectItem key={c.id} value={c.id.toString()}>
+                            {c.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -164,25 +366,26 @@ export default function AdminMedia() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Orden (opcional)</Label>
-                  <Input type="number" value={order} onChange={e => setOrder(e.target.value)} placeholder="0" />
-                </div>
-
-                <div className="space-y-2">
                   <Label>Archivo</Label>
-                  <Input 
-                    type="file" 
-                    accept={type === 'photo' ? "image/*" : "video/*"} 
-                    required 
-                    onChange={e => setFile(e.target.files?.[0] || null)}
+                  <Input
+                    type="file"
+                    accept={type === "photo" ? "image/*" : "video/*"}
+                    required
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
                   />
                 </div>
 
-                <Button type="submit" disabled={isUploading || !file} className="w-full">
+                <Button
+                  type="submit"
+                  disabled={isUploading || !file || !categoryId}
+                  className="w-full"
+                >
                   {isUploading ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Subiendo a Cloudinary...</>
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Subiendo...
+                    </>
                   ) : (
-                    "Guardar"
+                    "Subir"
                   )}
                 </Button>
               </form>
@@ -190,63 +393,84 @@ export default function AdminMedia() {
           </Dialog>
         </div>
 
-        {/* Media Grid grouped by category */}
         {isLoading ? (
           <div className="flex justify-center py-20">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
           </div>
         ) : (
           <div className="space-y-12">
-            {categories?.sort((a,b) => a.order - b.order).map(category => {
-              const catMedia = mediaItems?.filter(m => m.categoryId === category.id).sort((a,b) => a.order - b.order);
-              if (!catMedia?.length) return null;
+            {/* Sin categoría (orphaned items) */}
+            {uncategorized.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold border-b border-border pb-2 text-destructive flex items-center gap-2">
+                  <Tag className="w-5 h-5" /> Sin Categoría
+                  <span className="text-sm font-normal text-muted-foreground ml-2">
+                    — asigna una categoría con el botón <Tag className="inline w-3 h-3" />
+                  </span>
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {uncategorized.map((item) => (
+                    <SortableMediaCard
+                      key={item.id}
+                      item={item}
+                      categories={sortedCategories}
+                      onDelete={(id) => deleteMediaMutation.mutate({ id })}
+                      onCategoryChange={handleCategoryChange}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Per-category groups */}
+            {sortedCategories.map((category) => {
+              const catMedia = localMedia
+                .filter((m) => m.categoryId === category.id)
+                .sort((a, b) => a.order - b.order);
+              if (!catMedia.length) return null;
 
               return (
                 <div key={category.id} className="space-y-4">
-                  <h3 className="text-xl font-bold border-b border-border pb-2 text-secondary">{category.name}</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {catMedia.map(media => (
-                      <div key={media.id} className="group relative rounded-lg border border-border bg-card overflow-hidden">
-                        <div className="aspect-square bg-muted relative">
-                          {media.type === 'video' ? (
-                            <div className="w-full h-full flex items-center justify-center bg-black/10">
-                              <Video className="w-8 h-8 text-muted-foreground" />
-                            </div>
-                          ) : (
-                            <img src={media.url} alt={media.title} className="w-full h-full object-cover" />
-                          )}
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                            <Button 
-                              variant="destructive" 
-                              size="icon" 
-                              onClick={() => {
-                                if(confirm("¿Eliminar este archivo?")) {
-                                  deleteMediaMutation.mutate({ id: media.id });
-                                }
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
-                            Orden: {media.order}
-                          </div>
-                        </div>
-                        <div className="p-2 text-xs font-medium truncate" title={media.title}>
-                          {media.title}
-                        </div>
+                  <h3 className="text-xl font-bold border-b border-border pb-2 text-secondary flex items-center gap-2">
+                    {category.name}
+                    <span className="text-sm font-normal text-muted-foreground">
+                      ({catMedia.length})
+                    </span>
+                  </h3>
+
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={(e) => handleDragEnd(e, category.id)}
+                  >
+                    <SortableContext
+                      items={catMedia.map((m) => m.id)}
+                      strategy={rectSortingStrategy}
+                    >
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {catMedia.map((item) => (
+                          <SortableMediaCard
+                            key={item.id}
+                            item={item}
+                            categories={sortedCategories}
+                            onDelete={(id) => deleteMediaMutation.mutate({ id })}
+                            onCategoryChange={handleCategoryChange}
+                          />
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </SortableContext>
+                  </DndContext>
                 </div>
               );
             })}
-            
-            {mediaItems?.length === 0 && (
+
+            {localMedia.length === 0 && (
               <div className="text-center py-20 text-muted-foreground bg-card rounded-lg border border-border">
                 <UploadCloud className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
                 <p>No hay archivos multimedia subidos.</p>
-                <p className="text-sm mt-1">Usa el botón "Subir Archivo" para agregar contenido a tus proyectos.</p>
+                <p className="text-sm mt-1">
+                  Usa el botón "Subir Archivo" para agregar contenido.
+                </p>
               </div>
             )}
           </div>
