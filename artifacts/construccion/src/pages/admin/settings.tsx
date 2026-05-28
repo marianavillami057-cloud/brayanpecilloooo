@@ -23,6 +23,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle2, AlertCircle, Phone, Mail, MessageCircle, BarChart2, ImageIcon, Trash2, UploadCloud, UserCircle2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import { ImageCropDialog } from "@/components/image-crop-dialog";
+
+type CropType = "profile" | "cover";
 
 export default function AdminSettings() {
   const { toast } = useToast();
@@ -31,15 +34,12 @@ export default function AdminSettings() {
   const { data: cloudinarySettings, isLoading: isLoadingCloudinary } = useGetCloudinarySettings({
     query: { queryKey: getGetCloudinarySettingsQueryKey() },
   });
-
   const { data: contactSettings, isLoading: isLoadingContact } = useGetContactSettings({
     query: { queryKey: getGetContactSettingsQueryKey() },
   });
-
   const { data: statsSettings, isLoading: isLoadingStats } = useGetStatsSettings({
     query: { queryKey: getGetStatsSettingsQueryKey() },
   });
-
   const { data: heroSettings, isLoading: isLoadingHero } = useGetHeroSettings({
     query: { queryKey: getGetHeroSettingsQueryKey() },
   });
@@ -47,24 +47,24 @@ export default function AdminSettings() {
   const [cloudName, setCloudName] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [apiSecret, setApiSecret] = useState("");
-
   const [whatsapp, setWhatsapp] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-
   const [statProjects, setStatProjects] = useState(50);
   const [statYears, setStatYears] = useState(8);
   const [statSatisfaction, setStatSatisfaction] = useState(100);
 
-  const [isUploadingCover, setIsUploadingCover] = useState(false);
-  const [isUploadingProfile, setIsUploadingProfile] = useState(false);
+  // Crop dialog state
+  const [cropDialogOpen, setCropDialogOpen] = useState(false);
+  const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
+  const [cropType, setCropType] = useState<CropType>("profile");
+  const [isUploading, setIsUploading] = useState(false);
+
   const coverInputRef = useRef<HTMLInputElement>(null);
   const profileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (cloudinarySettings) {
-      setCloudName(cloudinarySettings.cloudName || "");
-    }
+    if (cloudinarySettings) setCloudName(cloudinarySettings.cloudName || "");
   }, [cloudinarySettings]);
 
   useEffect(() => {
@@ -91,9 +91,7 @@ export default function AdminSettings() {
         setApiKey("");
         setApiSecret("");
       },
-      onError: () => {
-        toast({ title: "Error al guardar", variant: "destructive" });
-      },
+      onError: () => toast({ title: "Error al guardar", variant: "destructive" }),
     },
   });
 
@@ -103,9 +101,7 @@ export default function AdminSettings() {
         queryClient.invalidateQueries({ queryKey: getGetStatsSettingsQueryKey() });
         toast({ title: "Estadísticas guardadas" });
       },
-      onError: () => {
-        toast({ title: "Error al guardar", variant: "destructive" });
-      },
+      onError: () => toast({ title: "Error al guardar", variant: "destructive" }),
     },
   });
 
@@ -115,9 +111,7 @@ export default function AdminSettings() {
         queryClient.invalidateQueries({ queryKey: getGetContactSettingsQueryKey() });
         toast({ title: "Datos de contacto guardados" });
       },
-      onError: () => {
-        toast({ title: "Error al guardar", variant: "destructive" });
-      },
+      onError: () => toast({ title: "Error al guardar", variant: "destructive" }),
     },
   });
 
@@ -127,13 +121,67 @@ export default function AdminSettings() {
         queryClient.invalidateQueries({ queryKey: getGetHeroSettingsQueryKey() });
         toast({ title: "Imagen actualizada" });
       },
-      onError: () => {
-        toast({ title: "Error al actualizar", variant: "destructive" });
-      },
+      onError: () => toast({ title: "Error al actualizar", variant: "destructive" }),
     },
   });
 
   const getSignature = useGetUploadSignature();
+
+  // Opens crop dialog instead of uploading directly
+  const handleFileSelected = (file: File, type: CropType) => {
+    if (!cloudinarySettings?.hasApiKey || !cloudinarySettings?.cloudName) {
+      toast({ title: "Configura Cloudinary primero en la sección de abajo", variant: "destructive" });
+      return;
+    }
+    const objectUrl = URL.createObjectURL(file);
+    setCropImageUrl(objectUrl);
+    setCropType(type);
+    setCropDialogOpen(true);
+  };
+
+  // Called when user confirms the crop
+  const handleCropConfirm = async (croppedBlob: Blob) => {
+    if (!cloudinarySettings?.hasApiKey || !cloudinarySettings?.cloudName) return;
+
+    try {
+      setIsUploading(true);
+      const sigData = await getSignature.mutateAsync({});
+
+      // Convert blob to File for upload
+      const fileName = cropType === "profile" ? "profile.jpg" : "cover.jpg";
+      const file = new File([croppedBlob], fileName, { type: "image/jpeg" });
+
+      const result = await uploadToCloudinary(
+        file,
+        sigData.signature,
+        sigData.timestamp,
+        sigData.apiKey,
+        sigData.cloudName
+      );
+
+      const field = cropType === "profile" ? "profileImage" : "coverImage";
+      updateHero.mutate({ data: { [field]: result.secure_url } });
+
+      // Cleanup
+      if (cropImageUrl) URL.revokeObjectURL(cropImageUrl);
+      setCropDialogOpen(false);
+      setCropImageUrl(null);
+    } catch (err: any) {
+      toast({ title: "Error al subir", description: err.message, variant: "destructive" });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleCropCancel = () => {
+    setCropDialogOpen(false);
+    if (cropImageUrl) URL.revokeObjectURL(cropImageUrl);
+    setCropImageUrl(null);
+  };
+
+  const handleDeleteHeroImage = (field: "coverImage" | "profileImage") => {
+    updateHero.mutate({ data: { [field]: null } });
+  };
 
   const handleCloudinarySubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,28 +206,6 @@ export default function AdminSettings() {
     updateStats.mutate({ data: { projects: statProjects, years: statYears, satisfaction: statSatisfaction } });
   };
 
-  const handleUploadHeroImage = async (file: File, field: "coverImage" | "profileImage") => {
-    if (!cloudinarySettings?.hasApiKey || !cloudinarySettings?.cloudName) {
-      toast({ title: "Configura Cloudinary primero en la sección de abajo", variant: "destructive" });
-      return;
-    }
-    const setter = field === "coverImage" ? setIsUploadingCover : setIsUploadingProfile;
-    try {
-      setter(true);
-      const sigData = await getSignature.mutateAsync({});
-      const result = await uploadToCloudinary(file, sigData.signature, sigData.timestamp, sigData.apiKey, sigData.cloudName);
-      updateHero.mutate({ data: { [field]: result.secure_url } });
-    } catch (err: any) {
-      toast({ title: "Error al subir", description: err.message, variant: "destructive" });
-    } finally {
-      setter(false);
-    }
-  };
-
-  const handleDeleteHeroImage = (field: "coverImage" | "profileImage") => {
-    updateHero.mutate({ data: { [field]: null } });
-  };
-
   return (
     <AdminLayout>
       <div className="space-y-8 max-w-2xl">
@@ -196,7 +222,7 @@ export default function AdminSettings() {
               Imágenes del Perfil
             </CardTitle>
             <CardDescription>
-              La portada es la imagen de fondo del hero. La foto de perfil es tu logo circular. Si eliminas alguna vuelve a la imagen original.
+              Al subir una imagen podrás ajustar el encuadre antes de guardar. Si eliminas alguna vuelve a la imagen original.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -224,10 +250,9 @@ export default function AdminSettings() {
                           size="sm"
                           variant="secondary"
                           onClick={() => coverInputRef.current?.click()}
-                          disabled={isUploadingCover}
                         >
-                          {isUploadingCover ? <Loader2 className="w-3 h-3 animate-spin" /> : <UploadCloud className="w-3 h-3" />}
-                          <span className="ml-1">Cambiar</span>
+                          <UploadCloud className="w-3 h-3 mr-1" />
+                          Cambiar
                         </Button>
                         <Button
                           size="sm"
@@ -244,18 +269,11 @@ export default function AdminSettings() {
                       className="border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
                       onClick={() => coverInputRef.current?.click()}
                     >
-                      {isUploadingCover ? (
-                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                          <p className="text-sm">Subiendo portada...</p>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                          <UploadCloud className="w-8 h-8" />
-                          <p className="text-sm font-medium">Haz clic para subir la portada</p>
-                          <p className="text-xs">JPG, PNG, WebP. Recomendado: 1200×400px</p>
-                        </div>
-                      )}
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <UploadCloud className="w-8 h-8" />
+                        <p className="text-sm font-medium">Haz clic para subir la portada</p>
+                        <p className="text-xs">JPG, PNG, WebP — podrás ajustar el encuadre antes de guardar</p>
+                      </div>
                     </div>
                   )}
                   <input
@@ -265,7 +283,7 @@ export default function AdminSettings() {
                     className="hidden"
                     onChange={(e) => {
                       const f = e.target.files?.[0];
-                      if (f) handleUploadHeroImage(f, "coverImage");
+                      if (f) handleFileSelected(f, "cover");
                       e.target.value = "";
                     }}
                   />
@@ -290,13 +308,9 @@ export default function AdminSettings() {
                         size="sm"
                         variant="outline"
                         onClick={() => profileInputRef.current?.click()}
-                        disabled={isUploadingProfile}
                       >
-                        {isUploadingProfile ? (
-                          <><Loader2 className="mr-2 w-4 h-4 animate-spin" />Subiendo...</>
-                        ) : (
-                          <><UploadCloud className="mr-2 w-4 h-4" />Cambiar foto de perfil</>
-                        )}
+                        <UploadCloud className="mr-2 w-4 h-4" />
+                        Cambiar foto de perfil
                       </Button>
                       {heroSettings?.profileImage && (
                         <Button
@@ -309,7 +323,9 @@ export default function AdminSettings() {
                           Restaurar original
                         </Button>
                       )}
-                      <p className="text-xs text-muted-foreground">JPG, PNG. Recomendado: cuadrada 400×400px</p>
+                      <p className="text-xs text-muted-foreground">
+                        Podrás ajustar el recorte circular antes de guardar
+                      </p>
                     </div>
                   </div>
                   <input
@@ -319,7 +335,7 @@ export default function AdminSettings() {
                     className="hidden"
                     onChange={(e) => {
                       const f = e.target.files?.[0];
-                      if (f) handleUploadHeroImage(f, "profileImage");
+                      if (f) handleFileSelected(f, "profile");
                       e.target.value = "";
                     }}
                   />
@@ -349,39 +365,17 @@ export default function AdminSettings() {
               <form onSubmit={handleStatsSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label>Proyectos Terminados</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={statProjects}
-                    onChange={(e) => setStatProjects(Number(e.target.value))}
-                    placeholder="ej. 50"
-                    required
-                  />
+                  <Input type="number" min={0} value={statProjects} onChange={(e) => setStatProjects(Number(e.target.value))} placeholder="ej. 50" required />
                   <p className="text-xs text-muted-foreground">Se muestra como "50+" en la página.</p>
                 </div>
                 <div className="space-y-2">
                   <Label>Años de Experiencia</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={statYears}
-                    onChange={(e) => setStatYears(Number(e.target.value))}
-                    placeholder="ej. 8"
-                    required
-                  />
+                  <Input type="number" min={0} value={statYears} onChange={(e) => setStatYears(Number(e.target.value))} placeholder="ej. 8" required />
                   <p className="text-xs text-muted-foreground">Se muestra como "8+" en la página.</p>
                 </div>
                 <div className="space-y-2">
                   <Label>Clientes Satisfechos (%)</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={statSatisfaction}
-                    onChange={(e) => setStatSatisfaction(Number(e.target.value))}
-                    placeholder="ej. 100"
-                    required
-                  />
+                  <Input type="number" min={0} max={100} value={statSatisfaction} onChange={(e) => setStatSatisfaction(Number(e.target.value))} placeholder="ej. 100" required />
                   <p className="text-xs text-muted-foreground">Se muestra como "100%" en la página.</p>
                 </div>
                 <Button type="submit" disabled={updateStats.isPending}>
@@ -416,13 +410,7 @@ export default function AdminSettings() {
                     <MessageCircle className="w-4 h-4 text-green-500" />
                     Número de WhatsApp
                   </Label>
-                  <Input
-                    data-testid="input-whatsapp"
-                    value={whatsapp}
-                    onChange={(e) => setWhatsapp(e.target.value)}
-                    placeholder="ej. +573159907313"
-                    required
-                  />
+                  <Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="ej. +573159907313" required />
                   <p className="text-xs text-muted-foreground">Incluir código de país. Ej: +573159907313</p>
                 </div>
                 <div className="space-y-2">
@@ -430,33 +418,16 @@ export default function AdminSettings() {
                     <Phone className="w-4 h-4 text-primary" />
                     Número de Llamada
                   </Label>
-                  <Input
-                    data-testid="input-phone"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="ej. +573159907313"
-                    required
-                  />
+                  <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="ej. +573159907313" required />
                 </div>
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-primary" />
                     Correo Electrónico
                   </Label>
-                  <Input
-                    data-testid="input-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="ej. alejandropecillo168@gmail.com"
-                    required
-                  />
+                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ej. alejandropecillo168@gmail.com" required />
                 </div>
-                <Button
-                  data-testid="button-save-contact"
-                  type="submit"
-                  disabled={updateContact.isPending}
-                >
+                <Button type="submit" disabled={updateContact.isPending}>
                   {updateContact.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Guardar Contacto
                 </Button>
@@ -495,37 +466,18 @@ export default function AdminSettings() {
                     <AlertCircle className="w-6 h-6 text-amber-500" />
                   )}
                 </div>
-
                 <div className="space-y-2">
                   <Label>Cloud Name</Label>
-                  <Input
-                    value={cloudName}
-                    onChange={(e) => setCloudName(e.target.value)}
-                    placeholder="ej. dxyz123abc"
-                    required
-                  />
+                  <Input value={cloudName} onChange={(e) => setCloudName(e.target.value)} placeholder="ej. dxyz123abc" required />
                 </div>
                 <div className="space-y-2">
                   <Label>API Key</Label>
-                  <Input
-                    type="text"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder={cloudinarySettings?.hasApiKey ? "•••••••••••••••• (Establecida)" : "Ingresa la API Key"}
-                    required={!cloudinarySettings?.hasApiKey}
-                  />
+                  <Input type="text" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder={cloudinarySettings?.hasApiKey ? "•••••••••••••••• (Establecida)" : "Ingresa la API Key"} required={!cloudinarySettings?.hasApiKey} />
                 </div>
                 <div className="space-y-2">
                   <Label>API Secret</Label>
-                  <Input
-                    type="password"
-                    value={apiSecret}
-                    onChange={(e) => setApiSecret(e.target.value)}
-                    placeholder={cloudinarySettings?.hasApiSecret ? "•••••••••••••••• (Establecida)" : "Ingresa el API Secret"}
-                    required={!cloudinarySettings?.hasApiSecret}
-                  />
+                  <Input type="password" value={apiSecret} onChange={(e) => setApiSecret(e.target.value)} placeholder={cloudinarySettings?.hasApiSecret ? "•••••••••••••••• (Establecida)" : "Ingresa el API Secret"} required={!cloudinarySettings?.hasApiSecret} />
                 </div>
-
                 <Button type="submit" disabled={updateCloudinary.isPending}>
                   {updateCloudinary.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Guardar Cloudinary
@@ -535,6 +487,18 @@ export default function AdminSettings() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Image Crop Dialog */}
+      {cropImageUrl && (
+        <ImageCropDialog
+          open={cropDialogOpen}
+          imageUrl={cropImageUrl}
+          cropType={cropType}
+          onConfirm={handleCropConfirm}
+          onCancel={handleCropCancel}
+          isUploading={isUploading}
+        />
+      )}
     </AdminLayout>
   );
 }
