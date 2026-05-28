@@ -444,7 +444,7 @@ export default function Home() {
               className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-5 sm:px-7 py-3 sm:py-4 rounded-lg shadow-lg transition-all text-sm sm:text-base w-full sm:w-auto"
             >
               <Phone className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-              <span className="truncate">{phone}</span>
+              <span className="truncate">LLAMAR</span>
             </a>
             <a
               href={`mailto:${email}`}
