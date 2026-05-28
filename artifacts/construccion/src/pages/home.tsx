@@ -11,7 +11,94 @@ import {
   getGetStatsSettingsQueryKey,
 } from "@workspace/api-client-react";
 import { Loader2, MessageCircle, Star, HardHat, Hammer, PaintBucket, Ruler, Phone, Mail } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
+
+type LightboxItem = { url: string; title: string; type: "image" | "video"; thumbnailUrl?: string | null };
+
+function Lightbox({ items, startIndex, onClose }: { items: LightboxItem[]; startIndex: number; onClose: () => void }) {
+  const [index, setIndex] = useState(startIndex);
+  const item = items[index];
+  const prev = useCallback(() => setIndex((i) => (i - 1 + items.length) % items.length), [items.length]);
+  const next = useCallback(() => setIndex((i) => (i + 1) % items.length), [items.length]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose, prev, next]);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      {/* Close */}
+      <button
+        className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/40 rounded-full p-2 transition-colors z-10"
+        onClick={onClose}
+      >
+        <X className="w-6 h-6" />
+      </button>
+
+      {/* Prev */}
+      {items.length > 1 && (
+        <button
+          className="absolute left-4 text-white/80 hover:text-white bg-black/40 rounded-full p-3 transition-colors z-10"
+          onClick={(e) => { e.stopPropagation(); prev(); }}
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+      )}
+
+      {/* Media */}
+      <div
+        className="max-w-5xl max-h-[90vh] w-full px-16 flex flex-col items-center gap-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {item.type === "video" ? (
+          <video
+            key={item.url}
+            src={item.url}
+            controls
+            autoPlay
+            className="max-h-[80vh] w-full rounded-lg shadow-2xl"
+            poster={item.thumbnailUrl || undefined}
+          />
+        ) : (
+          <img
+            src={item.url}
+            alt={item.title}
+            className="max-h-[80vh] max-w-full object-contain rounded-lg shadow-2xl"
+          />
+        )}
+        <p className="text-white/80 text-sm font-medium">{item.title}</p>
+        {items.length > 1 && (
+          <p className="text-white/40 text-xs">{index + 1} / {items.length}</p>
+        )}
+      </div>
+
+      {/* Next */}
+      {items.length > 1 && (
+        <button
+          className="absolute right-4 text-white/80 hover:text-white bg-black/40 rounded-full p-3 transition-colors z-10"
+          onClick={(e) => { e.stopPropagation(); next(); }}
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+      )}
+    </div>
+  );
+}
 
 function CountUp({ target, duration = 1800 }: { target: number; duration?: number }) {
   const [count, setCount] = useState(0);
@@ -68,6 +155,8 @@ export default function Home() {
   const { data: statsData } = useGetStatsSettings({
     query: { queryKey: getGetStatsSettingsQueryKey() },
   });
+
+  const [lightbox, setLightbox] = useState<{ items: LightboxItem[]; index: number } | null>(null);
 
   const isLoading = isLoadingCategories || isLoadingMedia;
 
@@ -142,34 +231,62 @@ export default function Home() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {categoryMedia.map((media) => (
-                        <div
-                          key={media.id}
-                          className="group rounded-xl overflow-hidden shadow-md bg-card hover:shadow-xl transition-all duration-300 border border-border"
-                        >
-                          <div className="aspect-video relative bg-muted">
-                            {media.type === "video" ? (
-                              <video
-                                src={media.url}
-                                controls
-                                className="w-full h-full object-cover"
-                                poster={media.thumbnailUrl || undefined}
-                              />
-                            ) : (
-                              <img
-                                src={media.url}
-                                alt={media.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                              />
-                            )}
+                      {categoryMedia.map((media, idx) => {
+                        const allItems: LightboxItem[] = categoryMedia.map((m) => ({
+                          url: m.url,
+                          title: m.title,
+                          type: m.type as "image" | "video",
+                          thumbnailUrl: m.thumbnailUrl,
+                        }));
+                        return (
+                          <div
+                            key={media.id}
+                            className="group rounded-xl overflow-hidden shadow-md bg-card hover:shadow-xl transition-all duration-300 border border-border cursor-pointer"
+                            onClick={() => setLightbox({ items: allItems, index: idx })}
+                          >
+                            <div className="aspect-video relative bg-muted">
+                              {media.type === "video" ? (
+                                <>
+                                  <video
+                                    src={media.url}
+                                    className="w-full h-full object-cover"
+                                    poster={media.thumbnailUrl || undefined}
+                                    muted
+                                    preload="metadata"
+                                  />
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
+                                    <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                      <svg className="w-6 h-6 text-secondary ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z"/>
+                                      </svg>
+                                    </div>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <img
+                                    src={media.url}
+                                    alt={media.title}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  />
+                                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity w-12 h-12 rounded-full bg-white/80 flex items-center justify-center shadow">
+                                      <svg className="w-5 h-5 text-secondary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+                                      </svg>
+                                    </div>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                            <div className="p-4 bg-card">
+                              <h3 className="font-semibold text-lg text-foreground line-clamp-1">
+                                {media.title}
+                              </h3>
+                            </div>
                           </div>
-                          <div className="p-4 bg-card">
-                            <h3 className="font-semibold text-lg text-foreground line-clamp-1">
-                              {media.title}
-                            </h3>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </section>
                 );
@@ -326,6 +443,15 @@ export default function Home() {
           </p>
         </div>
       </footer>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <Lightbox
+          items={lightbox.items}
+          startIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
+        />
+      )}
 
       {/* Floating WhatsApp button */}
       <a
