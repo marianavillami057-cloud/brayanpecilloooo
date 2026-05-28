@@ -44,25 +44,25 @@ function Lightbox({ items, startIndex, onClose }: { items: LightboxItem[]; start
     >
       {/* Close */}
       <button
-        className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/40 rounded-full p-2 transition-colors z-10"
+        className="absolute top-3 right-3 text-white/80 hover:text-white bg-black/40 rounded-full p-2 transition-colors z-10"
         onClick={onClose}
       >
-        <X className="w-6 h-6" />
+        <X className="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
 
       {/* Prev */}
       {items.length > 1 && (
         <button
-          className="absolute left-4 text-white/80 hover:text-white bg-black/40 rounded-full p-3 transition-colors z-10"
+          className="absolute left-2 sm:left-4 text-white/80 hover:text-white bg-black/40 rounded-full p-2 sm:p-3 transition-colors z-10"
           onClick={(e) => { e.stopPropagation(); prev(); }}
         >
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
       )}
 
       {/* Media */}
       <div
-        className="max-w-5xl max-h-[90vh] w-full px-16 flex flex-col items-center gap-4"
+        className="max-w-5xl max-h-[90vh] w-full px-10 sm:px-16 flex flex-col items-center gap-3"
         onClick={(e) => e.stopPropagation()}
       >
         {item.type === "video" ? (
@@ -71,17 +71,17 @@ function Lightbox({ items, startIndex, onClose }: { items: LightboxItem[]; start
             src={item.url}
             controls
             autoPlay
-            className="max-h-[80vh] w-full rounded-lg shadow-2xl"
+            className="max-h-[75vh] w-full rounded-lg shadow-2xl"
             poster={item.thumbnailUrl || undefined}
           />
         ) : (
           <img
             src={item.url}
             alt={item.title}
-            className="max-h-[80vh] max-w-full object-contain rounded-lg shadow-2xl"
+            className="max-h-[75vh] max-w-full object-contain rounded-lg shadow-2xl"
           />
         )}
-        <p className="text-white/80 text-sm font-medium">{item.title}</p>
+        <p className="text-white/80 text-xs sm:text-sm font-medium text-center px-2">{item.title}</p>
         {items.length > 1 && (
           <p className="text-white/40 text-xs">{index + 1} / {items.length}</p>
         )}
@@ -90,10 +90,10 @@ function Lightbox({ items, startIndex, onClose }: { items: LightboxItem[]; start
       {/* Next */}
       {items.length > 1 && (
         <button
-          className="absolute right-4 text-white/80 hover:text-white bg-black/40 rounded-full p-3 transition-colors z-10"
+          className="absolute right-2 sm:right-4 text-white/80 hover:text-white bg-black/40 rounded-full p-2 sm:p-3 transition-colors z-10"
           onClick={(e) => { e.stopPropagation(); next(); }}
         >
-          <ChevronRight className="w-6 h-6" />
+          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
       )}
     </div>
@@ -172,20 +172,20 @@ export default function Home() {
       {/* Hero Section */}
       <header className="bg-secondary text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10 z-0"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 relative z-10">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-12">
-            <div className="flex-1 space-y-6 text-center md:text-left">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 lg:py-32 relative z-10">
+          <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-8 sm:gap-12">
+            <div className="flex-1 space-y-4 sm:space-y-6 text-center sm:text-left">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight">
                 Alejandro Pecillo
               </h1>
-              <p className="text-xl md:text-2xl text-secondary-foreground/90 font-medium max-w-2xl border-l-4 border-primary pl-4">
+              <p className="text-base sm:text-xl md:text-2xl text-secondary-foreground/90 font-medium max-w-2xl border-l-4 border-primary pl-4">
                 Construyendo lo que necesitas, con la garantía que mereces.
               </p>
 
               <div className="pt-2">
                 <a
                   href="#portfolio"
-                  className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 py-4 rounded-lg shadow-lg hover-elevate transition-all"
+                  className="inline-block bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-lg shadow-lg hover-elevate transition-all text-sm sm:text-base"
                 >
                   Ver Proyectos
                 </a>
@@ -195,7 +195,7 @@ export default function Home() {
               <img
                 src="/logo.jpeg"
                 alt="Alejandro Pecillo Logo"
-                className="w-64 h-64 md:w-80 md:h-80 object-cover rounded-full shadow-2xl border-4 border-white/20"
+                className="w-40 h-40 sm:w-64 sm:h-64 md:w-80 md:h-80 object-cover rounded-full shadow-2xl border-4 border-white/20"
               />
             </div>
           </div>
@@ -203,7 +203,7 @@ export default function Home() {
       </header>
 
       {/* Portfolio Section */}
-      <main id="portfolio" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <main id="portfolio" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
         {isLoading ? (
           <div className="flex justify-center items-center py-32">
             <Loader2 className="w-12 h-12 animate-spin text-primary" />
@@ -304,67 +304,67 @@ export default function Home() {
       {/* Services Section */}
       <section className="bg-background py-16 border-y border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-secondary uppercase tracking-wide">Nuestros Servicios</h2>
+          <div className="text-center mb-10 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-secondary uppercase tracking-wide">Nuestros Servicios</h2>
             <div className="w-16 h-1 bg-primary mx-auto mt-4 rounded-full"></div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="flex flex-col items-center text-center gap-4 bg-muted/40 border border-border rounded-xl p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <HardHat className="w-8 h-8 text-primary" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="flex flex-col items-center text-center gap-3 sm:gap-4 bg-muted/40 border border-border rounded-xl p-5 sm:p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <HardHat className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
               </div>
-              <h3 className="text-lg font-bold text-foreground">Construcción</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">Edificamos desde cero con materiales de calidad y cumplimiento de plazos garantizado.</p>
+              <h3 className="text-sm sm:text-lg font-bold text-foreground">Construcción</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed hidden sm:block">Edificamos desde cero con materiales de calidad y cumplimiento de plazos garantizado.</p>
             </div>
-            <div className="flex flex-col items-center text-center gap-4 bg-muted/40 border border-border rounded-xl p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <Hammer className="w-8 h-8 text-primary" />
+            <div className="flex flex-col items-center text-center gap-3 sm:gap-4 bg-muted/40 border border-border rounded-xl p-5 sm:p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <Hammer className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
               </div>
-              <h3 className="text-lg font-bold text-foreground">Remodelación</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">Transformamos y modernizamos espacios existentes adaptándonos a tu visión y presupuesto.</p>
+              <h3 className="text-sm sm:text-lg font-bold text-foreground">Remodelación</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed hidden sm:block">Transformamos y modernizamos espacios existentes adaptándonos a tu visión y presupuesto.</p>
             </div>
-            <div className="flex flex-col items-center text-center gap-4 bg-muted/40 border border-border rounded-xl p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <PaintBucket className="w-8 h-8 text-primary" />
+            <div className="flex flex-col items-center text-center gap-3 sm:gap-4 bg-muted/40 border border-border rounded-xl p-5 sm:p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <PaintBucket className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
               </div>
-              <h3 className="text-lg font-bold text-foreground">Acabados</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">Pisos, pintura, enchapes y detalles finos que le dan vida y personalidad a cada obra.</p>
+              <h3 className="text-sm sm:text-lg font-bold text-foreground">Acabados</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed hidden sm:block">Pisos, pintura, enchapes y detalles finos que le dan vida y personalidad a cada obra.</p>
             </div>
-            <div className="flex flex-col items-center text-center gap-4 bg-muted/40 border border-border rounded-xl p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <Ruler className="w-8 h-8 text-primary" />
+            <div className="flex flex-col items-center text-center gap-3 sm:gap-4 bg-muted/40 border border-border rounded-xl p-5 sm:p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <Ruler className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
               </div>
-              <h3 className="text-lg font-bold text-foreground">Diseño</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">Planificamos y diseñamos cada proyecto para maximizar funcionalidad y estética.</p>
+              <h3 className="text-sm sm:text-lg font-bold text-foreground">Diseño</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed hidden sm:block">Planificamos y diseñamos cada proyecto para maximizar funcionalidad y estética.</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="bg-secondary text-secondary-foreground py-16">
+      <section className="bg-secondary text-secondary-foreground py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
-            <div className="flex flex-col items-center gap-2">
-              <p className="text-5xl font-extrabold text-primary">
+          <div className="grid grid-cols-3 gap-4 sm:gap-8 text-center">
+            <div className="flex flex-col items-center gap-1 sm:gap-2">
+              <p className="text-3xl sm:text-5xl font-extrabold text-primary">
                 <CountUp target={statsData?.projects ?? 50} />+
               </p>
-              <p className="text-lg font-semibold text-secondary-foreground/90 uppercase tracking-wide">Proyectos Terminados</p>
-              <p className="text-sm text-secondary-foreground/60">Obras entregadas con éxito en toda la región</p>
+              <p className="text-xs sm:text-lg font-semibold text-secondary-foreground/90 uppercase tracking-wide leading-tight">Proyectos<br className="sm:hidden" /> Terminados</p>
+              <p className="text-xs text-secondary-foreground/60 hidden sm:block">Obras entregadas con éxito en toda la región</p>
             </div>
-            <div className="flex flex-col items-center gap-2 sm:border-x border-secondary-foreground/20">
-              <p className="text-5xl font-extrabold text-primary">
+            <div className="flex flex-col items-center gap-1 sm:gap-2 border-x border-secondary-foreground/20">
+              <p className="text-3xl sm:text-5xl font-extrabold text-primary">
                 <CountUp target={statsData?.years ?? 8} />+
               </p>
-              <p className="text-lg font-semibold text-secondary-foreground/90 uppercase tracking-wide">Años de Experiencia</p>
-              <p className="text-sm text-secondary-foreground/60">Trayectoria y conocimiento en construcción</p>
+              <p className="text-xs sm:text-lg font-semibold text-secondary-foreground/90 uppercase tracking-wide leading-tight">Años de<br className="sm:hidden" /> Experiencia</p>
+              <p className="text-xs text-secondary-foreground/60 hidden sm:block">Trayectoria y conocimiento en construcción</p>
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <p className="text-5xl font-extrabold text-primary">
+            <div className="flex flex-col items-center gap-1 sm:gap-2">
+              <p className="text-3xl sm:text-5xl font-extrabold text-primary">
                 <CountUp target={statsData?.satisfaction ?? 100} />%
               </p>
-              <p className="text-lg font-semibold text-secondary-foreground/90 uppercase tracking-wide">Clientes Satisfechos</p>
-              <p className="text-sm text-secondary-foreground/60">Compromiso total con cada proyecto</p>
+              <p className="text-xs sm:text-lg font-semibold text-secondary-foreground/90 uppercase tracking-wide leading-tight">Clientes<br className="sm:hidden" /> Satisfechos</p>
+              <p className="text-xs text-secondary-foreground/60 hidden sm:block">Compromiso total con cada proyecto</p>
             </div>
           </div>
         </div>
@@ -399,38 +399,38 @@ export default function Home() {
       )}
 
       {/* Contact Section */}
-      <section className="bg-secondary text-secondary-foreground py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <h2 className="text-3xl font-bold">Contacto</h2>
-          <p className="text-secondary-foreground/80 text-lg max-w-xl mx-auto">
+      <section className="bg-secondary text-secondary-foreground py-12 sm:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4 sm:space-y-6">
+          <h2 className="text-2xl sm:text-3xl font-bold">Contacto</h2>
+          <p className="text-secondary-foreground/80 text-base sm:text-lg max-w-xl mx-auto">
             Consultas, presupuestos y proyectos — estamos disponibles para ayudarte.
           </p>
-          <div className="flex flex-wrap justify-center gap-4 pt-2">
+          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4 pt-2">
             <a
               href={`https://wa.me/${whatsappClean}`}
               target="_blank"
               rel="noopener noreferrer"
               data-testid="link-whatsapp-footer"
-              className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold px-7 py-4 rounded-lg shadow-lg transition-all text-lg"
+              className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold px-5 sm:px-7 py-3 sm:py-4 rounded-lg shadow-lg transition-all text-sm sm:text-base w-full sm:w-auto"
             >
-              <MessageCircle className="w-6 h-6" />
-              {whatsapp}
+              <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+              <span className="truncate">{whatsapp}</span>
             </a>
             <a
               href={`tel:${phoneClean}`}
               data-testid="link-phone-footer"
-              className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-7 py-4 rounded-lg shadow-lg transition-all text-lg"
+              className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-5 sm:px-7 py-3 sm:py-4 rounded-lg shadow-lg transition-all text-sm sm:text-base w-full sm:w-auto"
             >
-              <Phone className="w-6 h-6" />
-              {phone}
+              <Phone className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+              <span className="truncate">{phone}</span>
             </a>
             <a
               href={`mailto:${email}`}
               data-testid="link-email-footer"
-              className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white font-bold px-7 py-4 rounded-lg shadow-lg transition-all border border-white/30 text-lg"
+              className="inline-flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 text-white font-bold px-5 sm:px-7 py-3 sm:py-4 rounded-lg shadow-lg transition-all border border-white/30 text-sm sm:text-base w-full sm:w-auto"
             >
-              <Mail className="w-6 h-6" />
-              {email}
+              <Mail className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+              <span className="truncate">{email}</span>
             </a>
           </div>
         </div>
@@ -460,11 +460,11 @@ export default function Home() {
         rel="noopener noreferrer"
         data-testid="link-whatsapp-float"
         title="Contactar por WhatsApp"
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold pl-4 pr-5 py-3 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-green-500/40"
+        className="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-50 flex items-center gap-2 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold p-3 sm:pl-4 sm:pr-5 sm:py-3 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-green-500/40"
         style={{ boxShadow: "0 4px 24px 0 rgba(34,197,94,0.45)" }}
       >
         <MessageCircle className="w-6 h-6 flex-shrink-0" />
-        <span className="text-sm leading-tight">WhatsApp</span>
+        <span className="text-sm leading-tight hidden sm:inline">WhatsApp</span>
       </a>
     </div>
   );
