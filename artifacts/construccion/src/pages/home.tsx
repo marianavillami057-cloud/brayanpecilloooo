@@ -8,7 +8,7 @@ import {
   getGetContactSettingsQueryKey,
   getListTestimonialsQueryKey,
 } from "@workspace/api-client-react";
-import { Loader2, Phone, Mail, MessageCircle, Star } from "lucide-react";
+import { Loader2, MessageCircle, Star, HardHat, Hammer, PaintBucket, Ruler, Phone, Mail } from "lucide-react";
 
 export default function Home() {
   const { data: categories, isLoading: isLoadingCategories } = useListCategories(
@@ -73,6 +73,46 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {/* Services Section */}
+      <section className="bg-background py-16 border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-secondary uppercase tracking-wide">Nuestros Servicios</h2>
+            <div className="w-16 h-1 bg-primary mx-auto mt-4 rounded-full"></div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex flex-col items-center text-center gap-4 bg-muted/40 border border-border rounded-xl p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <HardHat className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground">Construcción</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">Edificamos desde cero con materiales de calidad y cumplimiento de plazos garantizado.</p>
+            </div>
+            <div className="flex flex-col items-center text-center gap-4 bg-muted/40 border border-border rounded-xl p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <Hammer className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground">Remodelación</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">Transformamos y modernizamos espacios existentes adaptándonos a tu visión y presupuesto.</p>
+            </div>
+            <div className="flex flex-col items-center text-center gap-4 bg-muted/40 border border-border rounded-xl p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <PaintBucket className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground">Acabados</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">Pisos, pintura, enchapes y detalles finos que le dan vida y personalidad a cada obra.</p>
+            </div>
+            <div className="flex flex-col items-center text-center gap-4 bg-muted/40 border border-border rounded-xl p-8 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <Ruler className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground">Diseño</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">Planificamos y diseñamos cada proyecto para maximizar funcionalidad y estética.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Portfolio Section */}
       <main id="portfolio" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
