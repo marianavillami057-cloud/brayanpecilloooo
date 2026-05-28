@@ -317,7 +317,83 @@ export default function Home() {
                 );
               })}
 
-            {(!categories?.length || !mediaItems?.length) && (
+            {/* Uncategorized items → "Más Videos y Fotos" */}
+            {(() => {
+              const knownCatIds = new Set((categories ?? []).map((c) => c.id));
+              const extras = (mediaItems ?? []).filter(
+                (m) => m.categoryId === 0 || !knownCatIds.has(m.categoryId)
+              ).sort((a, b) => a.order - b.order);
+              if (extras.length === 0) return null;
+              const allItems: LightboxItem[] = extras.map((m) => ({
+                url: m.url,
+                title: m.title,
+                type: m.type as "image" | "video",
+                thumbnailUrl: m.thumbnailUrl,
+              }));
+              return (
+                <section className="space-y-8">
+                  <div className="flex items-center gap-5">
+                    <div className="flex items-center gap-4 shrink-0">
+                      <div className="w-1.5 h-10 rounded-full bg-primary"></div>
+                      <h2 className="text-3xl sm:text-4xl font-extrabold text-secondary uppercase tracking-widest drop-shadow-sm">
+                        Más Videos y Fotos
+                      </h2>
+                    </div>
+                    <div className="flex-1 h-px bg-gradient-to-r from-primary/40 to-transparent"></div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {extras.map((media, idx) => (
+                      <div
+                        key={media.id}
+                        className="group rounded-xl overflow-hidden shadow-md bg-card hover:shadow-xl transition-all duration-300 border border-border cursor-pointer"
+                        onClick={() => setLightbox({ items: allItems, index: idx })}
+                      >
+                        <div className="aspect-video relative bg-muted">
+                          {media.type === "video" ? (
+                            <>
+                              <video
+                                src={media.url}
+                                className="w-full h-full object-cover"
+                                poster={media.thumbnailUrl || undefined}
+                                muted
+                                preload="metadata"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/40 transition-colors">
+                                <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                  <svg className="w-6 h-6 text-secondary ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z"/>
+                                  </svg>
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <img
+                                src={media.url}
+                                alt={media.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity w-12 h-12 rounded-full bg-white/80 flex items-center justify-center shadow">
+                                  <svg className="w-5 h-5 text-secondary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+                                  </svg>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        <div className="p-4 bg-card">
+                          <h3 className="font-semibold text-lg text-foreground line-clamp-1">{media.title}</h3>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              );
+            })()}
+
+            {(!mediaItems?.length) && (
               <div className="text-center py-20 text-muted-foreground">
                 <p className="text-xl">No hay proyectos disponibles en este momento.</p>
               </div>

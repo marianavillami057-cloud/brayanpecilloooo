@@ -277,7 +277,7 @@ export default function AdminMedia() {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !categoryId) return;
+    if (!file) return;
 
     if (!cloudinarySettings?.hasApiKey || !cloudinarySettings?.cloudName) {
       toast({
@@ -299,8 +299,8 @@ export default function AdminMedia() {
         sigData.cloudName
       );
 
-      // Calculate order as max + 1 in this category
-      const catId = parseInt(categoryId);
+      // Use 0 as sentinel for "no category"
+      const catId = categoryId ? parseInt(categoryId) : 0;
       const catItems = localMedia.filter((m) => m.categoryId === catId);
       const nextOrder = catItems.length > 0 ? Math.max(...catItems.map((m) => m.order)) + 1 : 0;
 
@@ -434,12 +434,13 @@ export default function AdminMedia() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Categoría *</Label>
-                    <Select value={categoryId} onValueChange={setCategoryId} required>
+                    <Label>Categoría <span className="text-muted-foreground text-xs">(opcional)</span></Label>
+                    <Select value={categoryId} onValueChange={setCategoryId}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar..." />
+                        <SelectValue placeholder="Sin categoría" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="0">— Sin categoría —</SelectItem>
                         {sortedCategories.map((c) => (
                           <SelectItem key={c.id} value={c.id.toString()}>
                             {c.name}
@@ -462,7 +463,7 @@ export default function AdminMedia() {
 
                 <Button
                   type="submit"
-                  disabled={isUploading || !file || !categoryId}
+                  disabled={isUploading || !file}
                   className="w-full"
                 >
                   {isUploading ? (
