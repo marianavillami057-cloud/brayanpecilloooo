@@ -1,6 +1,4 @@
 node_modules
 **/node_modules
-**/dist
-**/.turbo
-**/coverage
+artifacts/construccion/dist
 .git

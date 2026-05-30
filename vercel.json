@@ -2,7 +2,7 @@
   "version": 2,
   "framework": null,
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "buildCommand": "BASE_PATH=/ PORT=3000 pnpm --filter @workspace/construccion run build",
+  "buildCommand": "pnpm --filter @workspace/api-server run build && BASE_PATH=/ PORT=3000 pnpm --filter @workspace/construccion run build",
   "outputDirectory": "artifacts/construccion/dist/public",
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api" }
