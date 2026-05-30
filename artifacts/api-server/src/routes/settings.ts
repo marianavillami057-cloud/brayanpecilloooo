@@ -53,8 +53,8 @@ router.put("/cloudinary", requireAuth, async (req, res) => {
     };
 
     await setSetting("cloudinary_cloud_name", cloudName);
-    await setSetting("cloudinary_api_key", apiKey);
-    await setSetting("cloudinary_api_secret", apiSecret);
+    if (apiKey && apiKey.trim()) await setSetting("cloudinary_api_key", apiKey.trim());
+    if (apiSecret && apiSecret.trim()) await setSetting("cloudinary_api_secret", apiSecret.trim());
 
     return res.json({
       cloudName,

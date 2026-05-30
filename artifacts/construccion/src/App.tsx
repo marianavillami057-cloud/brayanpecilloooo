@@ -1,7 +1,8 @@
 import { Switch, Route, Router as WouterRouter } from "wouter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ApiError } from "@workspace/api-client-react";
 import NotFound from "@/pages/not-found";
 
 import Home from "./pages/home";
@@ -12,10 +13,21 @@ import AdminMedia from "./pages/admin/media";
 import AdminSettings from "./pages/admin/settings";
 import AdminTestimonials from "./pages/admin/testimonials";
 
+function handleAuthError(error: unknown) {
+  if (error instanceof ApiError && error.status === 401) {
+    window.location.href = "/admin";
+  }
+}
+
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({ onError: handleAuthError }),
+  mutationCache: new MutationCache({ onError: handleAuthError }),
   defaultOptions: {
     queries: {
-      retry: 1,
+      retry: (failureCount, error) => {
+        if (error instanceof ApiError && error.status === 401) return false;
+        return failureCount < 1;
+      },
       refetchOnWindowFocus: false,
     },
   },

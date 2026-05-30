@@ -1,4 +1,5 @@
 import { Router } from "express";
+import type { Request, Response, NextFunction } from "express";
 import crypto from "crypto";
 import { logger } from "../lib/logger";
 
@@ -39,6 +40,7 @@ router.post("/login", (req, res) => {
       httpOnly: true,
       sameSite: "lax",
       secure: isProduction,
+      path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     logger.info("Admin logged in");
@@ -49,7 +51,7 @@ router.post("/login", (req, res) => {
 });
 
 router.post("/logout", (req, res) => {
-  res.clearCookie("auth_token");
+  res.clearCookie("auth_token", { path: "/" });
   return res.json({ authenticated: false, email: null });
 });
 
@@ -62,12 +64,8 @@ router.get("/me", (req, res) => {
   return res.status(401).json({ authenticated: false, email: null });
 });
 
-export function requireAuth(
-  req: Parameters<Parameters<typeof router.use>[0]>[0],
-  res: Parameters<Parameters<typeof router.use>[0]>[1],
-  next: Parameters<Parameters<typeof router.use>[0]>[2]
-) {
-  const token = (req as { cookies?: Record<string, string> }).cookies?.auth_token;
+export function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const token = req.cookies?.auth_token as string | undefined;
   if (token && verifyToken(token)) {
     return next();
   }
